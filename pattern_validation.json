@@ -1,26 +1,53 @@
 {
   "validation_summary": [
     {
-      "pattern_name": "连续放量上攻",
-      "total_matches": 758,
-      "successful_matches": 0,
-      "success_rate": 0.0,
-      "avg_rise": 0.0,
+      "pattern_name": "V型反转放量上攻",
+      "total_matches": 95,
+      "successful_matches": 15,
+      "success_rate": 0.15789473684210525,
+      "success_rate_1pct": 0.3894736842105263,
+      "success_rate_3pct": 0.15789473684210525,
+      "success_rate_5pct": 0.06315789473684211,
+      "positive_rate": 0.5578947368421052,
+      "avg_rise": -0.0006061155018601002,
+      "median_rise": 0.003883491370127199,
       "is_valid": false
     },
     {
       "pattern_name": "缩量震荡后放量突破",
-      "total_matches": 71,
+      "total_matches": 106,
+      "successful_matches": 21,
+      "success_rate": 0.19811320754716982,
+      "success_rate_1pct": 0.4056603773584906,
+      "success_rate_3pct": 0.19811320754716982,
+      "success_rate_5pct": 0.09433962264150944,
+      "positive_rate": 0.5188679245283019,
+      "avg_rise": 0.002079365690260268,
+      "median_rise": 0.0012740325954656824,
+      "is_valid": false
+    },
+    {
+      "pattern_name": "连续放量上攻",
+      "total_matches": 2,
       "successful_matches": 0,
       "success_rate": 0.0,
-      "avg_rise": 0.0,
+      "success_rate_1pct": 0.5,
+      "success_rate_3pct": 0.0,
+      "success_rate_5pct": 0.0,
+      "positive_rate": 0.5,
+      "avg_rise": -0.01438458606357457,
+      "median_rise": -0.01438458606357457,
       "is_valid": false
     }
   ],
   "metadata": {
     "total_snapshots": 2000,
-    "n_clusters": 12,
-    "n_representatives": 60,
-    "validation_date": "2025-12-12T10:55:44.768313"
+    "validation_date": "2025-12-14T22:06:24.367465",
+    "method": "programmatic_matching",
+    "thresholds": [
+      0.01,
+      0.03,
+      0.05
+    ]
   }
 }
