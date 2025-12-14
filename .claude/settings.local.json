@@ -1,0 +1,18 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(python:*)",
+      "Bash(/c/Users/c-li/Documents/Claude/Stock/backend/venv/Scripts/python:*)",
+      "Bash(PYTHONIOENCODING=utf-8 /c/Users/c-li/Documents/Claude/Stock/backend/venv/Scripts/python:*)",
+      "Bash(sqlite3:*)",
+      "Bash(ls:*)",
+      "Bash(find:*)",
+      "Bash(cat:*)",
+      "Bash(curl:*)",
+      "Bash(PYTHONIOENCODING=utf-8 python:*)",
+      "Bash(git init:*)",
+      "Bash(git config:*)",
+      "Bash(git add:*)"
+    ]
+  }
+}

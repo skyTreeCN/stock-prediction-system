@@ -1,0 +1,1533 @@
+<!-- 这是系统设计书的第5-8章节,请将此部分插入到 system_design.html 的对应位置 -->
+
+        <!-- 5. 前端设计 -->
+        <section id="frontend-design" class="section">
+            <h2>5. 前端设计</h2>
+
+            <h3>5.1 页面设计</h3>
+
+            <h4>5.1.1 整体布局</h4>
+            <p>
+                前端采用<strong>单页面应用（SPA）</strong>设计,所有功能集成在一个页面中,分为三个功能区域,
+                用户无需页面跳转即可完成从数据获取到预测的全流程操作。
+            </p>
+
+            <div class="diagram">
+                <svg class="svg-diagram" viewBox="0 0 900 800" xmlns="http://www.w3.org/2000/svg">
+                    <!-- 页面边框 -->
+                    <rect x="50" y="50" width="800" height="700" rx="5" fill="#f8f9fa" stroke="#95a5a6" stroke-width="3"/>
+
+                    <!-- 页面标题 -->
+                    <rect x="50" y="50" width="800" height="80" fill="url(#grad1)"/>
+                    <text x="450" y="95" text-anchor="middle" fill="white" font-size="24" font-weight="bold">📊 AI智能股票预测系统</text>
+
+                    <!-- 区域1：数据获取 -->
+                    <rect x="80" y="160" width="740" height="150" rx="10" fill="white" stroke="#3498db" stroke-width="3"/>
+                    <text x="100" y="190" fill="#2c3e50" font-size="18" font-weight="bold">区域1：数据获取</text>
+                    <rect x="100" y="210" width="180" height="50" rx="5" fill="#3498db"/>
+                    <text x="190" y="240" text-anchor="middle" fill="white" font-size="14">获取上交所股票数据</text>
+                    <rect x="300" y="210" width="500" height="50" rx="5" fill="#ecf0f1" stroke="#bdc3c7" stroke-width="1"/>
+                    <text x="310" y="230" fill="#7f8c8d" font-size="12">状态：已获取2000只股票，150万条数据</text>
+                    <text x="310" y="250" fill="#7f8c8d" font-size="12">时间范围：2021-12-06 ~ 2024-12-06</text>
+                    <rect x="100" y="275" width="700" height="20" rx="3" fill="#d5dbdb"/>
+                    <rect x="100" y="275" width="560" height="20" rx="3" fill="#2ecc71"/>
+                    <text x="450" y="289" text-anchor="middle" fill="white" font-size="12" font-weight="bold">80%</text>
+
+                    <!-- 区域2：模式分析 -->
+                    <rect x="80" y="340" width="740" height="180" rx="10" fill="white" stroke="#e74c3c" stroke-width="3"/>
+                    <text x="100" y="370" fill="#2c3e50" font-size="18" font-weight="bold">区域2：数据分析</text>
+                    <rect x="100" y="390" width="180" height="50" rx="5" fill="#e74c3c"/>
+                    <text x="190" y="420" text-anchor="middle" fill="white" font-size="14">分析上涨模式</text>
+                    <rect x="300" y="390" width="500" height="110" rx="5" fill="#ecf0f1" stroke="#bdc3c7" stroke-width="1"/>
+                    <text x="310" y="410" fill="#2c3e50" font-size="13" font-weight="bold">识别出的上涨模式（6种）：</text>
+                    <text x="320" y="430" fill="#546e7a" font-size="11">1. 突破上升模式 - 连续阳线突破前高</text>
+                    <text x="320" y="445" fill="#546e7a" font-size="11">2. 底部反转模式 - V型反转，成交量放大</text>
+                    <text x="320" y="460" fill="#546e7a" font-size="11">3. 均线多头排列 - 短中长期均线向上</text>
+                    <text x="320" y="475" fill="#546e7a" font-size="11">4. 缩量整理突破 - 震荡后放量突破</text>
+                    <text x="320" y="490" fill="#546e7a" font-size="11">... 查看更多</text>
+
+                    <!-- 区域3：预测展示 -->
+                    <rect x="80" y="550" width="740" height="180" rx="10" fill="white" stroke="#9b59b6" stroke-width="3"/>
+                    <text x="100" y="580" fill="#2c3e50" font-size="18" font-weight="bold">区域3：相似性分析与预测</text>
+                    <rect x="100" y="600" width="180" height="50" rx="5" fill="#9b59b6"/>
+                    <text x="190" y="630" text-anchor="middle" fill="white" font-size="14">开始预测</text>
+
+                    <!-- 预测结果表格预览 -->
+                    <rect x="300" y="600" width="500" height="120" rx="5" fill="white" stroke="#bdc3c7" stroke-width="1"/>
+                    <!-- 表头 -->
+                    <rect x="300" y="600" width="500" height="25" fill="#34495e"/>
+                    <text x="320" y="617" fill="white" font-size="11" font-weight="bold">排名</text>
+                    <text x="380" y="617" fill="white" font-size="11" font-weight="bold">代码</text>
+                    <text x="450" y="617" fill="white" font-size="11" font-weight="bold">名称</text>
+                    <text x="540" y="617" fill="white" font-size="11" font-weight="bold">价格</text>
+                    <text x="620" y="617" fill="white" font-size="11" font-weight="bold">概率</text>
+                    <text x="710" y="617" fill="white" font-size="11" font-weight="bold">原因</text>
+                    <!-- 数据行 -->
+                    <text x="328" y="642" fill="#2c3e50" font-size="10">1</text>
+                    <text x="380" y="642" fill="#2c3e50" font-size="10">600519</text>
+                    <text x="450" y="642" fill="#2c3e50" font-size="10">贵州茅台</text>
+                    <text x="540" y="642" fill="#2c3e50" font-size="10">1680.50</text>
+                    <text x="620" y="642" fill="#e74c3c" font-size="10" font-weight="bold">95.2%</text>
+                    <text x="710" y="642" fill="#7f8c8d" font-size="9">突破上升...</text>
+
+                    <text x="328" y="662" fill="#2c3e50" font-size="10">2</text>
+                    <text x="380" y="662" fill="#2c3e50" font-size="10">600036</text>
+                    <text x="450" y="662" fill="#2c3e50" font-size="10">招商银行</text>
+                    <text x="540" y="662" fill="#2c3e50" font-size="10">38.75</text>
+                    <text x="620" y="662" fill="#e67e22" font-size="10" font-weight="bold">92.8%</text>
+                    <text x="710" y="662" fill="#7f8c8d" font-size="9">底部反转...</text>
+
+                    <text x="328" y="682" fill="#2c3e50" font-size="10">3</text>
+                    <text x="380" y="682" fill="#2c3e50" font-size="10">600887</text>
+                    <text x="450" y="682" fill="#2c3e50" font-size="10">伊利股份</text>
+                    <text x="540" y="682" fill="#2c3e50" font-size="10">28.90</text>
+                    <text x="620" y="682" fill="#f39c12" font-size="10" font-weight="bold">88.5%</text>
+                    <text x="710" y="682" fill="#7f8c8d" font-size="9">均线多头...</text>
+
+                    <text x="450" y="710" text-anchor="middle" fill="#95a5a6" font-size="10">... 共100条预测结果</text>
+                </svg>
+            </div>
+
+            <h4>5.1.2 功能区域说明</h4>
+
+            <div class="card-grid">
+                <div class="card">
+                    <h4>🔵 区域1：数据获取</h4>
+                    <p><strong>主要功能：</strong></p>
+                    <ul style="font-size: 0.95em;">
+                        <li>一键获取上交所股票数据</li>
+                        <li>显示数据获取进度</li>
+                        <li>展示数据统计信息</li>
+                        <li>显示数据日期范围</li>
+                    </ul>
+                    <p><strong>交互要素：</strong></p>
+                    <ul style="font-size: 0.95em;">
+                        <li>按钮：获取数据</li>
+                        <li>进度条：实时显示进度</li>
+                        <li>状态文本：任务状态信息</li>
+                    </ul>
+                </div>
+
+                <div class="card">
+                    <h4>🔴 区域2：数据分析</h4>
+                    <p><strong>主要功能：</strong></p>
+                    <ul style="font-size: 0.95em;">
+                        <li>AI分析历史上涨案例</li>
+                        <li>识别上涨模式</li>
+                        <li>展示模式列表</li>
+                        <li>显示模式特征</li>
+                    </ul>
+                    <p><strong>交互要素：</strong></p>
+                    <ul style="font-size: 0.95em;">
+                        <li>按钮：开始分析</li>
+                        <li>列表：模式卡片</li>
+                        <li>详情：可展开查看</li>
+                    </ul>
+                </div>
+
+                <div class="card">
+                    <h4>🟣 区域3：预测展示</h4>
+                    <p><strong>主要功能：</strong></p>
+                    <ul style="font-size: 0.95em;">
+                        <li>AI预测股票上涨概率</li>
+                        <li>展示前100只推荐股票</li>
+                        <li>显示概率和理由</li>
+                        <li>支持查看K线图</li>
+                    </ul>
+                    <p><strong>交互要素：</strong></p>
+                    <ul style="font-size: 0.95em;">
+                        <li>按钮：开始预测</li>
+                        <li>表格：预测结果</li>
+                        <li>颜色编码：概率分级</li>
+                        <li>链接：查看详情</li>
+                    </ul>
+                </div>
+            </div>
+
+            <h3>5.2 画面迁移图</h3>
+
+            <div class="diagram">
+                <svg class="svg-diagram" viewBox="0 0 1000 600" xmlns="http://www.w3.org/2000/svg">
+                    <!-- 初始状态 -->
+                    <rect x="50" y="50" width="200" height="100" rx="10" fill="#ecf0f1" stroke="#95a5a6" stroke-width="2"/>
+                    <text x="150" y="85" text-anchor="middle" fill="#2c3e50" font-size="14" font-weight="bold">初始状态</text>
+                    <text x="150" y="105" text-anchor="middle" fill="#7f8c8d" font-size="11">无数据</text>
+                    <text x="150" y="125" text-anchor="middle" fill="#7f8c8d" font-size="11">显示引导提示</text>
+
+                    <!-- 箭头1 -->
+                    <path d="M 250 100 L 320 100" stroke="#3498db" stroke-width="2" marker-end="url(#arrow1)"/>
+                    <text x="285" y="90" text-anchor="middle" fill="#3498db" font-size="11">点击获取数据</text>
+                    <defs>
+                        <marker id="arrow1" markerWidth="10" markerHeight="10" refX="5" refY="5" orient="auto">
+                            <polygon points="0 0, 10 5, 0 10" fill="#3498db" />
+                        </marker>
+                    </defs>
+
+                    <!-- 数据获取中 -->
+                    <rect x="320" y="50" width="200" height="100" rx="10" fill="#3498db" stroke="#2980b9" stroke-width="2"/>
+                    <text x="420" y="85" text-anchor="middle" fill="white" font-size="14" font-weight="bold">数据获取中</text>
+                    <text x="420" y="105" text-anchor="middle" fill="white" font-size="11">进度：45%</text>
+                    <text x="420" y="125" text-anchor="middle" fill="white" font-size="11">正在获取...</text>
+
+                    <!-- 箭头2 -->
+                    <path d="M 520 100 L 590 100" stroke="#27ae60" stroke-width="2" marker-end="url(#arrow2)"/>
+                    <text x="555" y="90" text-anchor="middle" fill="#27ae60" font-size="11">完成</text>
+                    <defs>
+                        <marker id="arrow2" markerWidth="10" markerHeight="10" refX="5" refY="5" orient="auto">
+                            <polygon points="0 0, 10 5, 0 10" fill="#27ae60" />
+                        </marker>
+                    </defs>
+
+                    <!-- 数据已就绪 -->
+                    <rect x="590" y="50" width="200" height="100" rx="10" fill="#2ecc71" stroke="#27ae60" stroke-width="2"/>
+                    <text x="690" y="85" text-anchor="middle" fill="white" font-size="14" font-weight="bold">数据已就绪</text>
+                    <text x="690" y="105" text-anchor="middle" fill="white" font-size="11">2000只股票</text>
+                    <text x="690" y="125" text-anchor="middle" fill="white" font-size="11">可以开始分析</text>
+
+                    <!-- 箭头3 -->
+                    <path d="M 690 150 L 690 220" stroke="#e74c3c" stroke-width="2" marker-end="url(#arrow3)"/>
+                    <text x="720" y="190" fill="#e74c3c" font-size="11">点击分析模式</text>
+                    <defs>
+                        <marker id="arrow3" markerWidth="10" markerHeight="10" refX="5" refY="5" orient="auto">
+                            <polygon points="0 0, 10 5, 0 10" fill="#e74c3c" />
+                        </marker>
+                    </defs>
+
+                    <!-- AI分析中 -->
+                    <rect x="590" y="220" width="200" height="100" rx="10" fill="#e74c3c" stroke="#c0392b" stroke-width="2"/>
+                    <text x="690" y="255" text-anchor="middle" fill="white" font-size="14" font-weight="bold">AI分析中</text>
+                    <text x="690" y="275" text-anchor="middle" fill="white" font-size="11">分析50个案例</text>
+                    <text x="690" y="295" text-anchor="middle" fill="white" font-size="11">提取模式特征...</text>
+
+                    <!-- 箭头4 -->
+                    <path d="M 590 270 L 520 270" stroke="#27ae60" stroke-width="2" marker-end="url(#arrow4)"/>
+                    <text x="555" y="260" text-anchor="middle" fill="#27ae60" font-size="11">完成</text>
+                    <defs>
+                        <marker id="arrow4" markerWidth="10" markerHeight="10" refX="5" refY="5" orient="auto">
+                            <polygon points="0 0, 10 5, 0 10" fill="#27ae60" />
+                        </marker>
+                    </defs>
+
+                    <!-- 模式已识别 -->
+                    <rect x="320" y="220" width="200" height="100" rx="10" fill="#27ae60" stroke="#229954" stroke-width="2"/>
+                    <text x="420" y="255" text-anchor="middle" fill="white" font-size="14" font-weight="bold">模式已识别</text>
+                    <text x="420" y="275" text-anchor="middle" fill="white" font-size="11">识别出6种模式</text>
+                    <text x="420" y="295" text-anchor="middle" fill="white" font-size="11">可以开始预测</text>
+
+                    <!-- 箭头5 -->
+                    <path d="M 320 270 L 250 270" stroke="#9b59b6" stroke-width="2" marker-end="url(#arrow5)"/>
+                    <text x="285" y="260" text-anchor="middle" fill="#9b59b6" font-size="11">点击预测</text>
+                    <defs>
+                        <marker id="arrow5" markerWidth="10" markerHeight="10" refX="5" refY="5" orient="auto">
+                            <polygon points="0 0, 10 5, 0 10" fill="#9b59b6" />
+                        </marker>
+                    </defs>
+
+                    <!-- AI预测中 -->
+                    <rect x="50" y="220" width="200" height="100" rx="10" fill="#9b59b6" stroke="#8e44ad" stroke-width="2"/>
+                    <text x="150" y="255" text-anchor="middle" fill="white" font-size="14" font-weight="bold">AI预测中</text>
+                    <text x="150" y="275" text-anchor="middle" fill="white" font-size="11">批次：15/40</text>
+                    <text x="150" y="295" text-anchor="middle" fill="white" font-size="11">计算相似度...</text>
+
+                    <!-- 箭头6 -->
+                    <path d="M 150 220 L 150 150" stroke="#27ae60" stroke-width="2" marker-end="url(#arrow6)"/>
+                    <text x="180" y="190" fill="#27ae60" font-size="11">完成</text>
+                    <defs>
+                        <marker id="arrow6" markerWidth="10" markerHeight="10" refX="5" refY="5" orient="auto">
+                            <polygon points="0 0, 10 5, 0 10" fill="#27ae60" />
+                        </marker>
+                    </defs>
+
+                    <!-- 预测完成 -->
+                    <rect x="50" y="380" width="740" height="120" rx="10" fill="#ecf0f1" stroke="#95a5a6" stroke-width="3"/>
+                    <text x="420" y="415" text-anchor="middle" fill="#2c3e50" font-size="16" font-weight="bold">✅ 预测完成 - 展示结果</text>
+                    <text x="420" y="440" text-anchor="middle" fill="#7f8c8d" font-size="12">前100只推荐股票 | 按概率降序排列 | 附带推荐理由</text>
+                    <text x="420" y="460" text-anchor="middle" fill="#7f8c8d" font-size="12">用户可查看详情、查看K线图、导出结果</text>
+                    <text x="420" y="485" text-anchor="middle" fill="#e74c3c" font-size="11">⚠️ 预测结果仅供参考，不构成投资建议</text>
+
+                    <!-- 返回箭头 -->
+                    <path d="M 790 440 L 850 440 L 850 100 L 790 100" stroke="#95a5a6" stroke-width="2" stroke-dasharray="5,5" marker-end="url(#arrow7)"/>
+                    <text x="860" y="270" fill="#95a5a6" font-size="11">重新预测</text>
+                    <defs>
+                        <marker id="arrow7" markerWidth="10" markerHeight="10" refX="5" refY="5" orient="auto">
+                            <polygon points="0 0, 10 5, 0 10" fill="#95a5a6" />
+                        </marker>
+                    </defs>
+                </svg>
+            </div>
+
+            <h3>5.3 具体机能构成</h3>
+
+            <h4>5.3.1 组件结构</h4>
+            <div class="code-block">
+frontend/
+├── app/
+│   ├── page.tsx                    # 主页面（组合三个区域组件）
+│   ├── layout.tsx                  # 全局布局
+│   └── globals.css                 # 全局样式
+├── components/
+│   ├── DataFetcher.tsx            # 区域1：数据获取组件
+│   ├── DataAnalyzer.tsx           # 区域2：模式分析组件
+│   └── SimilarityAnalysis.tsx     # 区域3：预测展示组件
+└── lib/
+    └── api.ts                     # API调用封装
+            </div>
+
+            <h4>5.3.2 机能概要</h4>
+
+            <table>
+                <thead>
+                    <tr>
+                        <th>组件名</th>
+                        <th>主要功能</th>
+                        <th>状态管理</th>
+                        <th>API调用</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>DataFetcher</strong></td>
+                        <td>
+                            • 触发数据获取任务<br>
+                            • 轮询任务状态<br>
+                            • 显示进度条<br>
+                            • 展示统计信息
+                        </td>
+                        <td>
+                            • loading<br>
+                            • progress<br>
+                            • statistics<br>
+                            • message
+                        </td>
+                        <td>
+                            POST /api/fetch-data<br>
+                            GET /api/task-status/fetch_data<br>
+                            GET /api/statistics
+                        </td>
+                    </tr>
+                    <tr>
+                        <td><strong>DataAnalyzer</strong></td>
+                        <td>
+                            • 触发模式分析任务<br>
+                            • 轮询分析状态<br>
+                            • 展示识别的模式<br>
+                            • 显示模式详情
+                        </td>
+                        <td>
+                            • analyzing<br>
+                            • patterns<br>
+                            • message
+                        </td>
+                        <td>
+                            POST /api/analyze<br>
+                            GET /api/task-status/analyze<br>
+                            GET /api/patterns
+                        </td>
+                    </tr>
+                    <tr>
+                        <td><strong>SimilarityAnalysis</strong></td>
+                        <td>
+                            • 触发预测任务<br>
+                            • 轮询预测状态<br>
+                            • 展示预测结果表格<br>
+                            • 概率颜色编码<br>
+                            • 支持查看K线图
+                        </td>
+                        <td>
+                            • predicting<br>
+                            • predictions<br>
+                            • message<br>
+                            • selectedStock
+                        </td>
+                        <td>
+                            POST /api/predict<br>
+                            GET /api/task-status/predict<br>
+                            GET /api/predictions<br>
+                            GET /api/stock/:code/kline
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <h4>5.3.3 关键技术实现</h4>
+
+            <div class="info-box">
+                <h4>🔄 状态轮询机制</h4>
+                <p>由于后端任务执行时间较长（数据获取10-30分钟，AI分析1-10分钟），采用轮询方式获取任务状态：</p>
+                <div class="code-block" style="margin-top: 15px;">
+// 轮询实现示例
+const pollTaskStatus = async (taskName: string) => {
+  const interval = setInterval(async () => {
+    const response = await fetch(`/api/task-status/${taskName}`);
+    const data = await response.json();
+
+    if (!data.data.running) {
+      clearInterval(interval);
+      setLoading(false);
+    }
+
+    setProgress(data.data.progress);
+    setMessage(data.data.message);
+  }, 2000); // 每2秒轮询一次
+};
+                </div>
+            </div>
+
+            <div class="success-box">
+                <h4>🎨 概率颜色编码</h4>
+                <p>根据AI预测的上涨概率，使用不同颜色高亮显示：</p>
+                <ul>
+                    <li><strong style="color: #e74c3c;">红色（90-100%）</strong>：非常高概率</li>
+                    <li><strong style="color: #e67e22;">橙色（80-90%）</strong>：高概率</li>
+                    <li><strong style="color: #f39c12;">黄色（70-80%）</strong>：中等概率</li>
+                    <li><strong style="color: #27ae60;">绿色（60-70%）</strong>：较低概率</li>
+                </ul>
+            </div>
+
+            <h4>5.3.4 响应式设计</h4>
+            <p>
+                使用TailwindCSS的响应式工具类，确保在不同设备上都有良好的显示效果：
+            </p>
+            <ul>
+                <li><strong>桌面端（>1024px）</strong>：三列网格布局，充分利用屏幕空间</li>
+                <li><strong>平板端（768-1024px）</strong>：两列布局，适度紧凑</li>
+                <li><strong>移动端（<768px）</strong>：单列垂直布局，易于滚动浏览</li>
+            </ul>
+        </section>
+
+        <!-- 6. 后端设计 -->
+        <section id="backend-design" class="section">
+            <h2>6. 后端设计</h2>
+
+            <h3>6.1 机能构成图</h3>
+
+            <div class="diagram">
+                <svg class="svg-diagram" viewBox="0 0 1000 700" xmlns="http://www.w3.org/2000/svg">
+                    <!-- API层 -->
+                    <text x="500" y="40" text-anchor="middle" fill="#2c3e50" font-size="20" font-weight="bold">FastAPI 路由层</text>
+
+                    <rect x="50" y="60" width="180" height="60" rx="5" fill="#3498db"/>
+                    <text x="140" y="85" text-anchor="middle" fill="white" font-size="12" font-weight="bold">POST /api/fetch-data</text>
+                    <text x="140" y="105" text-anchor="middle" fill="white" font-size="10">触发数据获取</text>
+
+                    <rect x="260" y="60" width="180" height="60" rx="5" fill="#3498db"/>
+                    <text x="350" y="85" text-anchor="middle" fill="white" font-size="12" font-weight="bold">POST /api/analyze</text>
+                    <text x="350" y="105" text-anchor="middle" fill="white" font-size="10">触发模式分析</text>
+
+                    <rect x="470" y="60" width="180" height="60" rx="5" fill="#3498db"/>
+                    <text x="560" y="85" text-anchor="middle" fill="white" font-size="12" font-weight="bold">POST /api/predict</text>
+                    <text x="560" y="105" text-anchor="middle" fill="white" font-size="10">触发预测任务</text>
+
+                    <rect x="680" y="60" width="180" height="60" rx="5" fill="#3498db"/>
+                    <text x="770" y="85" text-anchor="middle" fill="white" font-size="12" font-weight="bold">GET /api/task-status</text>
+                    <text x="770" y="105" text-anchor="middle" fill="white" font-size="10">查询任务状态</text>
+
+                    <!-- 业务逻辑层 -->
+                    <text x="500" y="180" text-anchor="middle" fill="#2c3e50" font-size="20" font-weight="bold">业务逻辑层</text>
+
+                    <rect x="80" y="210" width="250" height="120" rx="8" fill="url(#grad2)"/>
+                    <text x="205" y="240" text-anchor="middle" fill="white" font-size="14" font-weight="bold">📊 data_fetcher.py</text>
+                    <text x="205" y="265" text-anchor="middle" fill="white" font-size="11">• get_stock_list()</text>
+                    <text x="205" y="285" text-anchor="middle" fill="white" font-size="11">• fetch_stock_data(code)</text>
+                    <text x="205" y="305" text-anchor="middle" fill="white" font-size="11">• fetch_all_stocks(limit)</text>
+
+                    <rect x="370" y="210" width="250" height="120" rx="8" fill="url(#grad2)"/>
+                    <text x="495" y="240" text-anchor="middle" fill="white" font-size="14" font-weight="bold">🤖 analyzer.py</text>
+                    <text x="495" y="265" text-anchor="middle" fill="white" font-size="11">• analyze_rising_patterns()</text>
+                    <text x="495" y="285" text-anchor="middle" fill="white" font-size="11">• predict_stock_probability()</text>
+                    <text x="495" y="305" text-anchor="middle" fill="white" font-size="11">• call_claude_api()</text>
+
+                    <rect x="660" y="210" width="250" height="120" rx="8" fill="url(#grad2)"/>
+                    <text x="785" y="240" text-anchor="middle" fill="white" font-size="14" font-weight="bold">💾 database.py</text>
+                    <text x="785" y="265" text-anchor="middle" fill="white" font-size="11">• save_stock_data()</text>
+                    <text x="785" y="285" text-anchor="middle" fill="white" font-size="11">• get_rising_samples()</text>
+                    <text x="785" y="305" text-anchor="middle" fill="white" font-size="11">• get_recent_data()</text>
+
+                    <!-- 数据访问层 -->
+                    <text x="500" y="390" text-anchor="middle" fill="#2c3e50" font-size="20" font-weight="bold">数据访问层</text>
+
+                    <rect x="100" y="420" width="200" height="80" rx="8" fill="url(#grad3)"/>
+                    <text x="200" y="450" text-anchor="middle" fill="white" font-size="14" font-weight="bold">SQLite连接池</text>
+                    <text x="200" y="475" text-anchor="middle" fill="white" font-size="11">get_connection()</text>
+
+                    <rect x="400" y="420" width="200" height="80" rx="8" fill="#34495e"/>
+                    <text x="500" y="450" text-anchor="middle" fill="white" font-size="14" font-weight="bold">Claude API Client</text>
+                    <text x="500" y="475" text-anchor="middle" fill="white" font-size="11">Anthropic SDK</text>
+
+                    <rect x="700" y="420" width="200" height="80" rx="8" fill="#34495e"/>
+                    <text x="800" y="450" text-anchor="middle" fill="white" font-size="14" font-weight="bold">Yahoo Finance API</text>
+                    <text x="800" y="475" text-anchor="middle" fill="white" font-size="11">yfinance库</text>
+
+                    <!-- 数据存储层 -->
+                    <text x="500" y="560" text-anchor="middle" fill="#2c3e50" font-size="20" font-weight="bold">数据存储层</text>
+
+                    <rect x="150" y="590" width="250" height="80" rx="8" fill="#16a085"/>
+                    <text x="275" y="620" text-anchor="middle" fill="white" font-size="14" font-weight="bold">stock_data表</text>
+                    <text x="275" y="645" text-anchor="middle" fill="white" font-size="11">K线数据存储</text>
+
+                    <rect x="450" y="590" width="250" height="80" rx="8" fill="#16a085"/>
+                    <text x="575" y="620" text-anchor="middle" fill="white" font-size="14" font-weight="bold">rising_patterns表</text>
+                    <text x="575" y="645" text-anchor="middle" fill="white" font-size="11">上涨模式存储</text>
+
+                    <!-- 连接线 -->
+                    <path d="M 140 120 L 205 210" stroke="#7f8c8d" stroke-width="2"/>
+                    <path d="M 350 120 L 495 210" stroke="#7f8c8d" stroke-width="2"/>
+                    <path d="M 560 120 L 495 210" stroke="#7f8c8d" stroke-width="2"/>
+                    <path d="M 770 120 L 495 210" stroke="#7f8c8d" stroke-width="2"/>
+
+                    <path d="M 205 330 L 200 420" stroke="#7f8c8d" stroke-width="2"/>
+                    <path d="M 205 330 L 800 420" stroke="#7f8c8d" stroke-width="2"/>
+                    <path d="M 495 330 L 500 420" stroke="#7f8c8d" stroke-width="2"/>
+                    <path d="M 785 330 L 200 420" stroke="#7f8c8d" stroke-width="2"/>
+
+                    <path d="M 200 500 L 275 590" stroke="#7f8c8d" stroke-width="2"/>
+                    <path d="M 200 500 L 575 590" stroke="#7f8c8d" stroke-width="2"/>
+                </svg>
+            </div>
+
+            <h3>6.2 处理流程图</h3>
+
+            <h4>6.2.1 数据获取流程</h4>
+            <div class="diagram">
+                <pre style="font-family: monospace; line-height: 1.8;">
+┌─────────────────────────────────────────────────────────────┐
+│ 1. 接收POST /api/fetch-data请求                            │
+│    参数: {years: 3}                                         │
+└────────────────┬────────────────────────────────────────────┘
+                 ▼
+┌─────────────────────────────────────────────────────────────┐
+│ 2. 创建后台任务（BackgroundTasks）                         │
+│    避免HTTP超时                                             │
+└────────────────┬────────────────────────────────────────────┘
+                 ▼
+┌─────────────────────────────────────────────────────────────┐
+│ 3. 调用Yahoo Finance API                                   │
+│    - 获取上交所股票列表（SSE代码前缀）                      │
+│    - 筛选活跃股票（有交易量）                               │
+└────────────────┬────────────────────────────────────────────┘
+                 ▼
+┌─────────────────────────────────────────────────────────────┐
+│ 4. 逐个获取股票历史数据                                     │
+│    for stock in stock_list:                                 │
+│        data = yf.download(stock, period="3y")              │
+│        progress = (i / total) * 100                        │
+└────────────────┬────────────────────────────────────────────┘
+                 ▼
+┌─────────────────────────────────────────────────────────────┐
+│ 5. 数据清洗和标准化                                         │
+│    - 移除空值和异常值                                       │
+│    - 统一日期格式                                           │
+│    - 数值类型转换                                           │
+└────────────────┬────────────────────────────────────────────┘
+                 ▼
+┌─────────────────────────────────────────────────────────────┐
+│ 6. 批量保存到SQLite数据库                                   │
+│    INSERT OR REPLACE INTO stock_data                        │
+│    避免重复数据                                             │
+└────────────────┬────────────────────────────────────────────┘
+                 ▼
+┌─────────────────────────────────────────────────────────────┐
+│ 7. 更新任务状态                                             │
+│    task_status["fetch_data"] = {                           │
+│        "running": False,                                    │
+│        "progress": 100,                                     │
+│        "message": "成功！"                                  │
+│    }                                                        │
+└─────────────────────────────────────────────────────────────┘
+                </pre>
+            </div>
+
+            <h4>6.2.2 AI分析流程</h4>
+            <div class="diagram">
+                <pre style="font-family: monospace; line-height: 1.8;">
+┌─────────────────────────────────────────────────────────────┐
+│ 1. 接收POST /api/analyze请求                               │
+│    参数: {pattern_count: 50}                               │
+└────────────────┬────────────────────────────────────────────┘
+                 ▼
+┌─────────────────────────────────────────────────────────────┐
+│ 2. 从数据库筛选上涨样本                                     │
+│    SELECT * FROM stock_data                                 │
+│    WHERE 连续3天收盘价上涨                                  │
+│    LIMIT 50                                                 │
+└────────────────┬────────────────────────────────────────────┘
+                 ▼
+┌─────────────────────────────────────────────────────────────┐
+│ 3. 构造Claude AI提示词                                      │
+│    - 系统角色：股票分析专家                                 │
+│    - 任务：分析上涨案例共性                                 │
+│    - 输入：50个样本的K线数据                                │
+│    - 输出要求：JSON格式的模式列表                           │
+└────────────────┬────────────────────────────────────────────┘
+                 ▼
+┌─────────────────────────────────────────────────────────────┐
+│ 4. 调用Claude API                                           │
+│    response = anthropic.messages.create(                    │
+│        model="claude-3-5-sonnet-20241022",                 │
+│        messages=[{...}]                                     │
+│    )                                                        │
+└────────────────┬────────────────────────────────────────────┘
+                 ▼
+┌─────────────────────────────────────────────────────────────┐
+│ 5. 解析AI响应                                               │
+│    - 提取JSON内容                                           │
+│    - 验证数据格式                                           │
+│    - 错误处理                                               │
+└────────────────┬────────────────────────────────────────────┘
+                 ▼
+┌─────────────────────────────────────────────────────────────┐
+│ 6. 保存识别的模式                                           │
+│    INSERT INTO rising_patterns                              │
+│    (pattern_name, description, characteristics, ...)        │
+└────────────────┬────────────────────────────────────────────┘
+                 ▼
+┌─────────────────────────────────────────────────────────────┐
+│ 7. 更新任务状态                                             │
+│    返回识别出的模式数量                                     │
+└─────────────────────────────────────────────────────────────┘
+                </pre>
+            </div>
+
+            <h4>6.2.3 预测流程</h4>
+            <div class="diagram">
+                <pre style="font-family: monospace; line-height: 1.8;">
+┌─────────────────────────────────────────────────────────────┐
+│ 1. 接收POST /api/predict请求                               │
+└────────────────┬────────────────────────────────────────────┘
+                 ▼
+┌─────────────────────────────────────────────────────────────┐
+│ 2. 获取已保存的上涨模式                                     │
+│    patterns = db.get_patterns()                             │
+└────────────────┬────────────────────────────────────────────┘
+                 ▼
+┌─────────────────────────────────────────────────────────────┐
+│ 3. 获取所有股票最近30天数据                                 │
+│    recent_data = db.get_recent_data_all_stocks(days=30)    │
+└────────────────┬────────────────────────────────────────────┘
+                 ▼
+┌─────────────────────────────────────────────────────────────┐
+│ 4. 分批处理（每批50只股票）                                 │
+│    batches = split_into_batches(stocks, batch_size=50)     │
+└────────────────┬────────────────────────────────────────────┘
+                 ▼
+┌─────────────────────────────────────────────────────────────┐
+│ 5. 对每批调用Claude AI                                      │
+│    for batch in batches:                                    │
+│        prompt = 构造预测提示词                              │
+│        response = claude_api.call(prompt)                   │
+│        predictions += parse_response(response)              │
+└────────────────┬────────────────────────────────────────────┘
+                 ▼
+┌─────────────────────────────────────────────────────────────┐
+│ 6. 汇总所有批次预测结果                                     │
+│    - 合并预测列表                                           │
+│    - 按概率降序排序                                         │
+│    - 取前100名                                              │
+└────────────────┬────────────────────────────────────────────┘
+                 ▼
+┌─────────────────────────────────────────────────────────────┐
+│ 7. 保存到任务状态                                           │
+│    task_status["predict"]["result"] = top_100_predictions  │
+└─────────────────────────────────────────────────────────────┘
+                </pre>
+            </div>
+
+            <h3>6.3 机能划分</h3>
+
+            <table>
+                <thead>
+                    <tr>
+                        <th>模块名称</th>
+                        <th>文件</th>
+                        <th>主要类/函数</th>
+                        <th>职责</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>路由控制</strong></td>
+                        <td>main.py</td>
+                        <td>
+                            • FastAPI实例<br>
+                            • 路由装饰器<br>
+                            • CORS中间件
+                        </td>
+                        <td>
+                            • 接收HTTP请求<br>
+                            • 路由分发<br>
+                            • 跨域处理<br>
+                            • 响应返回
+                        </td>
+                    </tr>
+                    <tr>
+                        <td><strong>数据获取</strong></td>
+                        <td>data_fetcher_yfinance.py</td>
+                        <td>
+                            • YahooFinanceDataFetcher<br>
+                            • get_stock_list()<br>
+                            • fetch_stock_data()<br>
+                            • fetch_all_stocks()
+                        </td>
+                        <td>
+                            • 获取股票列表<br>
+                            • 下载K线数据<br>
+                            • 数据清洗<br>
+                            • 进度反馈
+                        </td>
+                    </tr>
+                    <tr>
+                        <td><strong>AI分析</strong></td>
+                        <td>analyzer.py</td>
+                        <td>
+                            • StockAnalyzer<br>
+                            • analyze_rising_patterns()<br>
+                            • predict_stock_probability()<br>
+                            • _call_claude()
+                        </td>
+                        <td>
+                            • 调用Claude API<br>
+                            • 模式识别<br>
+                            • 相似度计算<br>
+                            • 概率预测
+                        </td>
+                    </tr>
+                    <tr>
+                        <td><strong>数据库操作</strong></td>
+                        <td>database.py</td>
+                        <td>
+                            • StockDatabase<br>
+                            • save_stock_data()<br>
+                            • get_rising_samples()<br>
+                            • get_recent_data()<br>
+                            • save_patterns()<br>
+                            • get_patterns()
+                        </td>
+                        <td>
+                            • 数据库连接管理<br>
+                            • CRUD操作<br>
+                            • 复杂查询<br>
+                            • 事务处理
+                        </td>
+                    </tr>
+                    <tr>
+                        <td><strong>数据模型</strong></td>
+                        <td>models.py</td>
+                        <td>
+                            • StockPrediction<br>
+                            • AnalysisPattern<br>
+                            • FetchDataRequest<br>
+                            • AnalyzeRequest
+                        </td>
+                        <td>
+                            • 数据验证<br>
+                            • 类型定义<br>
+                            • 序列化/反序列化<br>
+                            • API文档生成
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <h3>6.4 机能概要</h3>
+
+            <h4>6.4.1 关键技术点</h4>
+
+            <div class="card-grid">
+                <div class="card">
+                    <h4>⚡ 异步任务处理</h4>
+                    <p>使用FastAPI的BackgroundTasks实现长时间任务的后台执行，避免HTTP请求超时</p>
+                    <div class="code-block" style="margin-top: 10px; font-size: 0.85em;">
+@app.post("/api/fetch-data")
+async def fetch_data(
+    request: FetchDataRequest,
+    background_tasks: BackgroundTasks
+):
+    background_tasks.add_task(
+        fetch_task,
+        request.years
+    )
+    return {"success": True}
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h4>🔄 任务状态管理</h4>
+                    <p>使用全局字典存储任务状态，支持前端实时轮询</p>
+                    <div class="code-block" style="margin-top: 10px; font-size: 0.85em;">
+task_status = {
+    "fetch_data": {
+        "running": False,
+        "progress": 0,
+        "message": ""
+    }
+}
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h4>🤖 AI Prompt工程</h4>
+                    <p>精心设计的提示词确保Claude AI输出符合预期的JSON格式</p>
+                    <ul style="font-size: 0.9em; margin-top: 10px;">
+                        <li>明确角色定位</li>
+                        <li>结构化输入</li>
+                        <li>JSON格式要求</li>
+                        <li>示例输出</li>
+                    </ul>
+                </div>
+
+                <div class="card">
+                    <h4>📊 批处理优化</h4>
+                    <p>将大量股票分批处理，平衡API效率和成本</p>
+                    <div class="code-block" style="margin-top: 10px; font-size: 0.85em;">
+batch_size = 50
+for i in range(0, len(stocks), batch_size):
+    batch = stocks[i:i+batch_size]
+    predictions += analyze_batch(batch)
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h4>🔒 错误处理</h4>
+                    <p>完善的异常捕获和错误恢复机制</p>
+                    <ul style="font-size: 0.9em; margin-top: 10px;">
+                        <li>API调用重试</li>
+                        <li>数据库事务回滚</li>
+                        <li>用户友好的错误提示</li>
+                        <li>日志记录</li>
+                    </ul>
+                </div>
+
+                <div class="card">
+                    <h4>⚙️ 环境配置</h4>
+                    <p>使用.env文件管理敏感配置</p>
+                    <div class="code-block" style="margin-top: 10px; font-size: 0.85em;">
+ANTHROPIC_API_KEY=sk-xxx
+DATABASE_PATH=../data/stocks.db
+YEARS_OF_DATA=3
+                    </div>
+                </div>
+            </div>
+
+            <h4>6.4.2 性能优化</h4>
+
+            <div class="info-box">
+                <h4>🚀 已实施的优化措施</h4>
+                <ul>
+                    <li><strong>数据库索引</strong>：在(code, date)列上建立复合索引，加速查询</li>
+                    <li><strong>批量插入</strong>：使用executemany()批量插入数据，提升写入性能</li>
+                    <li><strong>连接复用</strong>：使用连接池复用数据库连接</li>
+                    <li><strong>数据缓存</strong>：任务结果缓存在内存中，避免重复计算</li>
+                    <li><strong>惰性加载</strong>：只在需要时才查询数据库</li>
+                </ul>
+            </div>
+
+            <h4>6.4.3 安全措施</h4>
+
+            <div class="warning-box">
+                <h4>🔐 安全考虑</h4>
+                <ul>
+                    <li><strong>API Key保护</strong>：通过环境变量管理，不硬编码在代码中</li>
+                    <li><strong>输入验证</strong>：使用Pydantic进行请求参数验证</li>
+                    <li><strong>SQL注入防护</strong>：使用参数化查询</li>
+                    <li><strong>CORS限制</strong>：只允许特定源访问API</li>
+                    <li><strong>Rate Limiting</strong>：控制API调用频率（可选实施）</li>
+                </ul>
+            </div>
+        </section>
+
+        <!-- 7. 前后台共通设计 -->
+        <section id="common-design" class="section">
+            <h2>7. 前后台共通设计</h2>
+
+            <h3>7.1 数据库设计</h3>
+
+            <h4>7.1.1 ER图</h4>
+            <div class="diagram">
+                <svg class="svg-diagram" viewBox="0 0 900 500" xmlns="http://www.w3.org/2000/svg">
+                    <!-- stock_data 表 -->
+                    <rect x="100" y="100" width="300" height="300" rx="10" fill="white" stroke="#3498db" stroke-width="3"/>
+                    <rect x="100" y="100" width="300" height="50" fill="#3498db"/>
+                    <text x="250" y="132" text-anchor="middle" fill="white" font-size="18" font-weight="bold">stock_data（股票数据表）</text>
+
+                    <text x="120" y="175" fill="#2c3e50" font-size="13" font-weight="bold">🔑 id: INTEGER (PK, AUTO_INCREMENT)</text>
+                    <text x="120" y="200" fill="#2c3e50" font-size="13">code: TEXT (股票代码)</text>
+                    <text x="120" y="225" fill="#2c3e50" font-size="13">name: TEXT (股票名称)</text>
+                    <text x="120" y="250" fill="#2c3e50" font-size="13">date: TEXT (日期)</text>
+                    <text x="120" y="275" fill="#2c3e50" font-size="13">open: REAL (开盘价)</text>
+                    <text x="120" y="300" fill="#2c3e50" font-size="13">close: REAL (收盘价)</text>
+                    <text x="120" y="325" fill="#2c3e50" font-size="13">high: REAL (最高价)</text>
+                    <text x="120" y="350" fill="#2c3e50" font-size="13">low: REAL (最低价)</text>
+                    <text x="120" y="375" fill="#2c3e50" font-size="13">volume: REAL (成交量)</text>
+
+                    <!-- rising_patterns 表 -->
+                    <rect x="500" y="100" width="350" height="320" rx="10" fill="white" stroke="#e74c3c" stroke-width="3"/>
+                    <rect x="500" y="100" width="350" height="50" fill="#e74c3c"/>
+                    <text x="675" y="132" text-anchor="middle" fill="white" font-size="18" font-weight="bold">rising_patterns（上涨模式表）</text>
+
+                    <text x="520" y="175" fill="#2c3e50" font-size="13" font-weight="bold">🔑 id: INTEGER (PK, AUTO_INCREMENT)</text>
+                    <text x="520" y="200" fill="#2c3e50" font-size="13">pattern_name: TEXT (模式名称)</text>
+                    <text x="520" y="225" fill="#2c3e50" font-size="13">description: TEXT (模式描述)</text>
+                    <text x="520" y="250" fill="#2c3e50" font-size="13">characteristics: TEXT (特征描述)</text>
+                    <text x="520" y="275" fill="#2c3e50" font-size="13">example_stock_code: TEXT (示例股票)</text>
+                    <text x="520" y="300" fill="#2c3e50" font-size="13">key_days: TEXT (关键日期)</text>
+                    <text x="520" y="325" fill="#2c3e50" font-size="13">key_features: TEXT (关键特征)</text>
+                    <text x="520" y="350" fill="#2c3e50" font-size="13">created_at: TEXT (创建时间)</text>
+
+                    <!-- 关系说明 -->
+                    <path d="M 400 250 L 500 250" stroke="#95a5a6" stroke-width="2" stroke-dasharray="5,5"/>
+                    <text x="450" y="240" text-anchor="middle" fill="#7f8c8d" font-size="12">用于分析</text>
+
+                    <!-- 索引说明 -->
+                    <rect x="100" y="430" width="750" height="50" rx="5" fill="#ecf0f1" stroke="#bdc3c7" stroke-width="1"/>
+                    <text x="120" y="455" fill="#2c3e50" font-size="13" font-weight="bold">📌 索引：</text>
+                    <text x="120" y="470" fill="#546e7a" font-size="12">idx_code_date ON stock_data(code, date) - 加速按股票代码和日期查询</text>
+                </svg>
+            </div>
+
+            <h4>7.1.2 表结构详细说明</h4>
+
+            <div class="success-box">
+                <h4>📊 stock_data 表（股票K线数据表）</h4>
+                <table style="margin-top: 15px;">
+                    <thead>
+                        <tr>
+                            <th>字段名</th>
+                            <th>数据类型</th>
+                            <th>约束</th>
+                            <th>说明</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>id</strong></td>
+                            <td>INTEGER</td>
+                            <td>PRIMARY KEY AUTO_INCREMENT</td>
+                            <td>主键，自增ID</td>
+                        </tr>
+                        <tr>
+                            <td><strong>code</strong></td>
+                            <td>TEXT</td>
+                            <td>NOT NULL</td>
+                            <td>股票代码，如"600519.SS"</td>
+                        </tr>
+                        <tr>
+                            <td><strong>name</strong></td>
+                            <td>TEXT</td>
+                            <td>NOT NULL</td>
+                            <td>股票名称，如"贵州茅台"</td>
+                        </tr>
+                        <tr>
+                            <td><strong>date</strong></td>
+                            <td>TEXT</td>
+                            <td>NOT NULL</td>
+                            <td>交易日期，格式"YYYY-MM-DD"</td>
+                        </tr>
+                        <tr>
+                            <td><strong>open</strong></td>
+                            <td>REAL</td>
+                            <td>-</td>
+                            <td>开盘价（元）</td>
+                        </tr>
+                        <tr>
+                            <td><strong>close</strong></td>
+                            <td>REAL</td>
+                            <td>-</td>
+                            <td>收盘价（元）</td>
+                        </tr>
+                        <tr>
+                            <td><strong>high</strong></td>
+                            <td>REAL</td>
+                            <td>-</td>
+                            <td>最高价（元）</td>
+                        </tr>
+                        <tr>
+                            <td><strong>low</strong></td>
+                            <td>REAL</td>
+                            <td>-</td>
+                            <td>最低价（元）</td>
+                        </tr>
+                        <tr>
+                            <td><strong>volume</strong></td>
+                            <td>REAL</td>
+                            <td>-</td>
+                            <td>成交量（股）</td>
+                        </tr>
+                    </tbody>
+                </table>
+                <p style="margin-top: 15px;"><strong>唯一约束：</strong>UNIQUE(code, date) - 同一股票同一天只能有一条记录</p>
+                <p><strong>索引：</strong>CREATE INDEX idx_code_date ON stock_data(code, date)</p>
+            </div>
+
+            <div class="info-box" style="margin-top: 25px;">
+                <h4>🎯 rising_patterns 表（上涨模式表）</h4>
+                <table style="margin-top: 15px;">
+                    <thead>
+                        <tr>
+                            <th>字段名</th>
+                            <th>数据类型</th>
+                            <th>约束</th>
+                            <th>说明</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>id</strong></td>
+                            <td>INTEGER</td>
+                            <td>PRIMARY KEY AUTO_INCREMENT</td>
+                            <td>主键，自增ID</td>
+                        </tr>
+                        <tr>
+                            <td><strong>pattern_name</strong></td>
+                            <td>TEXT</td>
+                            <td>NOT NULL</td>
+                            <td>模式名称，如"突破上升模式"</td>
+                        </tr>
+                        <tr>
+                            <td><strong>description</strong></td>
+                            <td>TEXT</td>
+                            <td>-</td>
+                            <td>模式详细描述</td>
+                        </tr>
+                        <tr>
+                            <td><strong>characteristics</strong></td>
+                            <td>TEXT</td>
+                            <td>-</td>
+                            <td>K线特征描述（JSON字符串）</td>
+                        </tr>
+                        <tr>
+                            <td><strong>example_stock_code</strong></td>
+                            <td>TEXT</td>
+                            <td>-</td>
+                            <td>典型案例股票代码</td>
+                        </tr>
+                        <tr>
+                            <td><strong>key_days</strong></td>
+                            <td>TEXT</td>
+                            <td>-</td>
+                            <td>关键日期列表（JSON）</td>
+                        </tr>
+                        <tr>
+                            <td><strong>key_features</strong></td>
+                            <td>TEXT</td>
+                            <td>-</td>
+                            <td>关键特征列表（JSON）</td>
+                        </tr>
+                        <tr>
+                            <td><strong>created_at</strong></td>
+                            <td>TEXT</td>
+                            <td>DEFAULT CURRENT_TIMESTAMP</td>
+                            <td>创建时间</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <h4>7.1.3 数据库创建SQL</h4>
+            <div class="code-block">
+-- 创建股票数据表
+CREATE TABLE IF NOT EXISTS stock_data (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    code TEXT NOT NULL,
+    name TEXT NOT NULL,
+    date TEXT NOT NULL,
+    open REAL,
+    close REAL,
+    high REAL,
+    low REAL,
+    volume REAL,
+    UNIQUE(code, date)
+);
+
+-- 创建索引
+CREATE INDEX IF NOT EXISTS idx_code_date ON stock_data(code, date);
+
+-- 创建上涨模式表
+CREATE TABLE IF NOT EXISTS rising_patterns (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    pattern_name TEXT NOT NULL,
+    description TEXT,
+    characteristics TEXT,
+    example_stock_code TEXT,
+    key_days TEXT,
+    key_features TEXT,
+    created_at TEXT DEFAULT CURRENT_TIMESTAMP
+);
+            </div>
+
+            <h3>7.2 API接口规范</h3>
+
+            <h4>7.2.1 RESTful设计原则</h4>
+            <ul>
+                <li>使用HTTP方法表达操作：GET查询、POST创建/执行、PUT更新、DELETE删除</li>
+                <li>URL采用名词复数形式：/api/stocks、/api/patterns、/api/predictions</li>
+                <li>使用HTTP状态码：200成功、400客户端错误、500服务器错误</li>
+                <li>统一的响应格式：{"success": boolean, "data": any, "message": string}</li>
+            </ul>
+
+            <h4>7.2.2 接口清单</h4>
+            <table>
+                <thead>
+                    <tr>
+                        <th>接口路径</th>
+                        <th>方法</th>
+                        <th>功能</th>
+                        <th>请求参数</th>
+                        <th>响应示例</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>/</td>
+                        <td>GET</td>
+                        <td>健康检查</td>
+                        <td>-</td>
+                        <td>{"status": "ok"}</td>
+                    </tr>
+                    <tr>
+                        <td>/api/statistics</td>
+                        <td>GET</td>
+                        <td>获取数据统计</td>
+                        <td>-</td>
+                        <td>{"stock_count": 2000, "record_count": 1500000}</td>
+                    </tr>
+                    <tr>
+                        <td>/api/fetch-data</td>
+                        <td>POST</td>
+                        <td>触发数据获取</td>
+                        <td>{"years": 3}</td>
+                        <td>{"success": true, "message": "任务已启动"}</td>
+                    </tr>
+                    <tr>
+                        <td>/api/analyze</td>
+                        <td>POST</td>
+                        <td>触发模式分析</td>
+                        <td>{"pattern_count": 50}</td>
+                        <td>{"success": true}</td>
+                    </tr>
+                    <tr>
+                        <td>/api/predict</td>
+                        <td>POST</td>
+                        <td>触发预测任务</td>
+                        <td>-</td>
+                        <td>{"success": true}</td>
+                    </tr>
+                    <tr>
+                        <td>/api/task-status/{name}</td>
+                        <td>GET</td>
+                        <td>查询任务状态</td>
+                        <td>path: name</td>
+                        <td>{"running": false, "progress": 100}</td>
+                    </tr>
+                    <tr>
+                        <td>/api/patterns</td>
+                        <td>GET</td>
+                        <td>获取上涨模式</td>
+                        <td>-</td>
+                        <td>[{pattern_name: "", ...}]</td>
+                    </tr>
+                    <tr>
+                        <td>/api/predictions</td>
+                        <td>GET</td>
+                        <td>获取预测结果</td>
+                        <td>-</td>
+                        <td>[{code: "", probability: 95.2, ...}]</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <h3>7.3 编码规约</h3>
+
+            <h4>7.3.1 Python编码规范（后端）</h4>
+            <div class="info-box">
+                <p><strong>遵循PEP 8规范：</strong></p>
+                <ul>
+                    <li><strong>命名规范</strong>：
+                        <ul style="margin-top: 5px;">
+                            <li>模块/包：小写+下划线，如 data_fetcher.py</li>
+                            <li>类名：大驼峰，如 StockAnalyzer</li>
+                            <li>函数/变量：小写+下划线，如 get_stock_list()</li>
+                            <li>常量：全大写+下划线，如 API_KEY</li>
+                        </ul>
+                    </li>
+                    <li><strong>缩进</strong>：使用4个空格</li>
+                    <li><strong>行长度</strong>：最大79个字符</li>
+                    <li><strong>导入顺序</strong>：标准库 → 第三方库 → 本地模块</li>
+                    <li><strong>类型注解</strong>：使用类型提示增强代码可读性</li>
+                </ul>
+            </div>
+
+            <div class="code-block">
+# 示例：符合规范的Python代码
+from typing import List, Optional
+import pandas as pd
+from anthropic import Anthropic
+
+class StockAnalyzer:
+    """股票分析器类
+
+    使用Claude AI分析股票数据并预测上涨概率
+    """
+
+    def __init__(self, api_key: str):
+        """初始化分析器
+
+        Args:
+            api_key: Claude API密钥
+        """
+        self.client = Anthropic(api_key=api_key)
+
+    def analyze_patterns(self, samples: pd.DataFrame) -> List[dict]:
+        """分析上涨模式
+
+        Args:
+            samples: 上涨样本数据
+
+        Returns:
+            识别出的模式列表
+        """
+        # 实现代码...
+        pass
+            </div>
+
+            <h4>7.3.2 TypeScript编码规范（前端）</h4>
+            <div class="info-box">
+                <p><strong>遵循Airbnb JavaScript Style Guide：</strong></p>
+                <ul>
+                    <li><strong>命名规范</strong>：
+                        <ul style="margin-top: 5px;">
+                            <li>组件：大驼峰，如 DataFetcher.tsx</li>
+                            <li>函数/变量：小驼峰，如 fetchData()</li>
+                            <li>常量：全大写+下划线，如 API_BASE_URL</li>
+                            <li>接口/类型：大驼峰+I前缀，如 IStockData</li>
+                        </ul>
+                    </li>
+                    <li><strong>缩进</strong>：使用2个空格</li>
+                    <li><strong>引号</strong>：使用单引号</li>
+                    <li><strong>分号</strong>：总是使用分号</li>
+                    <li><strong>类型定义</strong>：优先使用interface而非type</li>
+                </ul>
+            </div>
+
+            <div class="code-block">
+// 示例：符合规范的TypeScript代码
+interface IStockPrediction {
+  code: string;
+  name: string;
+  price: number;
+  probability: number;
+  reason: string;
+}
+
+const DataFetcher: React.FC = () => {
+  const [loading, setLoading] = useState<boolean>(false);
+  const [progress, setProgress] = useState<number>(0);
+
+  const handleFetchData = async (): Promise<void> => {
+    try {
+      setLoading(true);
+      const response = await axios.post('/api/fetch-data', {
+        years: 3
+      });
+      // 处理响应...
+    } catch (error) {
+      console.error('获取数据失败:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="p-6 bg-white rounded-lg shadow-md">
+      {/* JSX内容 */}
+    </div>
+  );
+};
+
+export default DataFetcher;
+            </div>
+
+            <h4>7.3.3 SQL编码规范</h4>
+            <div class="info-box">
+                <ul>
+                    <li>关键字使用大写：SELECT、FROM、WHERE、INSERT</li>
+                    <li>表名/字段名使用小写+下划线</li>
+                    <li>使用参数化查询，防止SQL注入</li>
+                    <li>复杂查询添加注释说明</li>
+                </ul>
+            </div>
+
+            <div class="code-block">
+-- 良好的SQL编码示例
+
+-- 查询连续3天上涨的股票
+SELECT
+    code,
+    name,
+    date,
+    close
+FROM stock_data
+WHERE code IN (
+    SELECT DISTINCT code
+    FROM stock_data
+    GROUP BY code
+    HAVING COUNT(*) >= 750  -- 至少3年数据
+)
+ORDER BY date DESC
+LIMIT 50;
+
+-- 使用参数化查询（Python代码）
+cursor.execute('''
+    INSERT OR REPLACE INTO stock_data
+    (code, name, date, open, close, high, low, volume)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+''', (code, name, date, open_price, close_price, high, low, volume))
+            </div>
+
+            <h4>7.3.4 注释规范</h4>
+            <div class="success-box">
+                <p><strong>Python注释规范（Docstring）：</strong></p>
+                <ul>
+                    <li>模块级：文件开头说明模块用途</li>
+                    <li>类级：说明类的职责和主要方法</li>
+                    <li>函数级：说明参数、返回值、异常</li>
+                    <li>使用Google风格或NumPy风格</li>
+                </ul>
+                <p style="margin-top: 15px;"><strong>TypeScript注释规范（JSDoc）：</strong></p>
+                <ul>
+                    <li>组件：说明props和用途</li>
+                    <li>函数：说明参数和返回值</li>
+                    <li>复杂逻辑：行内注释解释</li>
+                </ul>
+            </div>
+        </section>
+
+        <!-- 8. 其他要件讨论 -->
+        <section id="requirements" class="section">
+            <h2>8. 其他要件讨论</h2>
+
+            <h3>8.1 系统扩展性</h3>
+
+            <h4>8.1.1 数据源扩展</h4>
+            <p>
+                当前系统使用Yahoo Finance作为数据源。为提升可靠性，已预留多个数据源适配器：
+            </p>
+            <div class="card-grid">
+                <div class="card">
+                    <h4>✅ Yahoo Finance</h4>
+                    <p>当前使用，稳定可靠，免费无限制</p>
+                </div>
+                <div class="card">
+                    <h4>⚙️ AkShare</h4>
+                    <p>国内数据源，已实现但连接不稳定</p>
+                </div>
+                <div class="card">
+                    <h4>⚙️ Tushare</h4>
+                    <p>专业金融数据，需积分权限</p>
+                </div>
+                <div class="card">
+                    <h4>⚙️ BaoStock</h4>
+                    <p>免费数据源，已实现但连接问题</p>
+                </div>
+            </div>
+
+            <p style="margin-top: 20px;">
+                通过统一的接口设计，可以轻松切换数据源，只需修改main.py中的一行代码：
+            </p>
+            <div class="code-block">
+# 切换数据源示例
+fetcher = YahooFinanceDataFetcher(years=years)  # 当前使用
+# fetcher = AkShareDataFetcher(years=years)    # 切换到AkShare
+# fetcher = TushareDataFetcher(years=years)    # 切换到Tushare
+            </div>
+
+            <h4>8.1.2 市场覆盖扩展</h4>
+            <p>
+                当前版本专注于<strong>上交所（SSE）</strong>股票。未来可扩展至：
+            </p>
+            <ul>
+                <li><strong>深交所（SZSE）</strong>：修改股票代码前缀筛选逻辑</li>
+                <li><strong>港股（HKEX）</strong>：调整数据获取API</li>
+                <li><strong>美股（NYSE/NASDAQ）</strong>：Yahoo Finance已支持</li>
+                <li><strong>A股全市场</strong>：同时覆盖沪深两市</li>
+            </ul>
+
+            <h4>8.1.3 分析模型扩展</h4>
+            <div class="info-box">
+                <p><strong>当前模型：</strong>基于历史上涨案例的模式识别</p>
+                <p><strong>未来可扩展：</strong></p>
+                <ul>
+                    <li>增加技术指标：MACD、RSI、布林带等</li>
+                    <li>基本面分析：财报数据、估值指标</li>
+                    <li>情绪分析：新闻、社交媒体情绪</li>
+                    <li>量化因子：多因子模型</li>
+                    <li>集成学习：组合多种预测模型</li>
+                </ul>
+            </div>
+
+            <h3>8.2 部署方案</h3>
+
+            <h4>8.2.1 本地部署（当前方案）</h4>
+            <div class="success-box">
+                <p><strong>优势：</strong></p>
+                <ul>
+                    <li>✅ 数据完全私密，保护投资策略</li>
+                    <li>✅ 无服务器成本，只需支付API费用</li>
+                    <li>✅ 完全可控，可自由修改</li>
+                    <li>✅ 无网络延迟，响应速度快</li>
+                </ul>
+                <p><strong>限制：</strong></p>
+                <ul>
+                    <li>❌ 需要保持电脑开机运行</li>
+                    <li>❌ 无法多设备访问</li>
+                    <li>❌ 数据备份需手动操作</li>
+                </ul>
+            </div>
+
+            <h4>8.2.2 云端部署（可选方案）</h4>
+            <div class="info-box">
+                <p><strong>适用场景：</strong>需要远程访问或多人协作</p>
+                <p><strong>推荐方案：</strong></p>
+                <ul>
+                    <li><strong>低成本方案</strong>：阿里云/腾讯云轻量服务器（¥50/月）</li>
+                    <li><strong>免费方案</strong>：Railway.app / Render.com（有限额度）</li>
+                    <li><strong>专业方案</strong>：AWS / Google Cloud（按需付费）</li>
+                </ul>
+                <p><strong>需要调整：</strong></p>
+                <ul>
+                    <li>数据库：SQLite → PostgreSQL（生产环境）</li>
+                    <li>静态资源：部署到CDN</li>
+                    <li>API：配置HTTPS证书</li>
+                    <li>任务队列：使用Celery + Redis</li>
+                </ul>
+            </div>
+
+            <h3>8.3 数据备份策略</h3>
+
+            <div class="warning-box">
+                <h4>⚠️ 重要提醒</h4>
+                <p>
+                    数据是系统的核心资产，建议定期备份。备份内容包括：
+                </p>
+                <ul>
+                    <li><strong>数据库文件</strong>：data/stocks.db（包含所有股票数据和模式）</li>
+                    <li><strong>配置文件</strong>：backend/.env（包含API密钥等敏感信息）</li>
+                    <li><strong>预测结果</strong>：可选择导出为CSV/Excel</li>
+                </ul>
+            </div>
+
+            <h4>8.3.1 备份方案</h4>
+            <div class="code-block">
+# 简单备份脚本（backup.sh）
+#!/bin/bash
+
+# 创建备份目录
+mkdir -p backups/$(date +%Y%m%d)
+
+# 备份数据库
+cp data/stocks.db backups/$(date +%Y%m%d)/stocks_$(date +%H%M%S).db
+
+# 备份配置（去除敏感信息）
+cp backend/.env.example backups/$(date +%Y%m%d)/.env.example
+
+echo "备份完成: backups/$(date +%Y%m%d)/"
+            </div>
+
+            <h3>8.4 合规性说明</h3>
+
+            <div class="warning-box">
+                <h4>⚖️ 法律合规</h4>
+                <p><strong>数据来源合规：</strong></p>
+                <ul>
+                    <li>✅ 使用公开数据源（Yahoo Finance），符合其使用条款</li>
+                    <li>✅ 仅用于个人研究学习，非商业用途</li>
+                    <li>✅ 不涉及内幕交易或市场操纵</li>
+                </ul>
+                <p style="margin-top: 15px;"><strong>免责声明：</strong></p>
+                <ul>
+                    <li>⚠️ 本系统预测结果仅供参考，不构成投资建议</li>
+                    <li>⚠️ 股市有风险，投资需谨慎</li>
+                    <li>⚠️ 用户需自行承担投资决策的风险和责任</li>
+                    <li>⚠️ 开发者不对使用本系统导致的任何损失负责</li>
+                </ul>
+            </div>
+
+            <h3>8.5 未来优化方向</h3>
+
+            <div class="card-grid">
+                <div class="card">
+                    <h4>📊 功能增强</h4>
+                    <ul style="font-size: 0.95em;">
+                        <li>回测功能：验证预测准确率</li>
+                        <li>K线图可视化：集成ECharts</li>
+                        <li>预测结果导出：Excel/CSV</li>
+                        <li>自选股管理：关注列表</li>
+                        <li>邮件/微信通知：推送预测结果</li>
+                    </ul>
+                </div>
+
+                <div class="card">
+                    <h4>🚀 性能优化</h4>
+                    <ul style="font-size: 0.95em;">
+                        <li>引入Redis缓存</li>
+                        <li>数据库分表分区</li>
+                        <li>异步任务队列（Celery）</li>
+                        <li>API响应缓存</li>
+                        <li>前端虚拟滚动</li>
+                    </ul>
+                </div>
+
+                <div class="card">
+                    <h4>🤖 AI模型优化</h4>
+                    <ul style="font-size: 0.95em;">
+                        <li>尝试Claude Opus模型</li>
+                        <li>优化Prompt工程</li>
+                        <li>增加Few-shot示例</li>
+                        <li>引入RAG技术</li>
+                        <li>模型输出结构化</li>
+                    </ul>
+                </div>
+
+                <div class="card">
+                    <h4>🎨 用户体验</h4>
+                    <ul style="font-size: 0.95em;">
+                        <li>深色模式</li>
+                        <li>多语言支持</li>
+                        <li>移动端APP</li>
+                        <li>数据可视化仪表盘</li>
+                        <li>个性化设置</li>
+                    </ul>
+                </div>
+            </div>
+
+            <h3>8.6 文档总结</h3>
+
+            <div class="highlight-box">
+                <h4>📖 本概要设计书涵盖内容</h4>
+                <p>本文档完整描述了AI智能股票预测系统的设计方案，包括：</p>
+                <ul style="margin-top: 15px;">
+                    <li>✅ <strong>第1章：系统开发背景</strong> - 经济环境、技术机遇、开发初衷</li>
+                    <li>✅ <strong>第2章：系统特色</strong> - 核心理念、技术亮点、创新点</li>
+                    <li>✅ <strong>第3章：业务流程</strong> - 完整流程图、数据样本策略</li>
+                    <li>✅ <strong>第4章：技术框架</strong> - 架构图、技术栈、成本分析</li>
+                    <li>✅ <strong>第5章：前端设计</strong> - 页面布局、画面迁移、组件设计</li>
+                    <li>✅ <strong>第6章：后端设计</strong> - 机能构成、处理流程、性能优化</li>
+                    <li>✅ <strong>第7章：共通设计</strong> - 数据库ER图、API规范、编码规约</li>
+                    <li>✅ <strong>第8章：其他要件</strong> - 扩展性、部署方案、合规性说明</li>
+                </ul>
+                <p style="margin-top: 20px; font-size: 1.1em;">
+                    <strong>本设计书可作为系统开发、维护、扩展的技术参考文档。</strong>
+                </p>
+            </div>
+
+            <div style="text-align: center; margin-top: 50px; padding: 30px; background: #ecf0f1; border-radius: 10px;">
+                <h3 style="color: #2c3e50; margin-bottom: 15px;">感谢阅读！</h3>
+                <p style="font-size: 1.1em; color: #546e7a;">
+                    如有任何问题或建议，欢迎联系开发团队。
+                </p>
+                <p style="margin-top: 20px; color: #95a5a6; font-size: 0.95em;">
+                    © 2024 AI智能股票预测系统 | 版本 V1.0 | 基于Claude AI技术
+                </p>
+            </div>
+        </section>
+
+<!-- 文档结束 -->

@@ -1,0 +1,26 @@
+{
+  "validation_summary": [
+    {
+      "pattern_name": "连续放量上攻",
+      "total_matches": 758,
+      "successful_matches": 0,
+      "success_rate": 0.0,
+      "avg_rise": 0.0,
+      "is_valid": false
+    },
+    {
+      "pattern_name": "缩量震荡后放量突破",
+      "total_matches": 71,
+      "successful_matches": 0,
+      "success_rate": 0.0,
+      "avg_rise": 0.0,
+      "is_valid": false
+    }
+  ],
+  "metadata": {
+    "total_snapshots": 2000,
+    "n_clusters": 12,
+    "n_representatives": 60,
+    "validation_date": "2025-12-12T10:55:44.768313"
+  }
+}

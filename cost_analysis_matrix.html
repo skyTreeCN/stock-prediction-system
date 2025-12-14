@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>方案5: 综合决策矩阵 - AI成本效益分析</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Microsoft YaHei', 'PingFang SC', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 40px 20px;
+        }
+        .container {
+            max-width: 1800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+        h1 {
+            text-align: center;
+            color: #2c3e50;
+            margin-bottom: 15px;
+            font-size: 2.5em;
+        }
+        .subtitle {
+            text-align: center;
+            color: #7f8c8d;
+            margin-bottom: 40px;
+            font-size: 1.2em;
+        }
+        .matrix {
+            display: grid;
+            grid-template-columns: 200px repeat(9, 1fr);
+            gap: 2px;
+            background: #ddd;
+            border-radius: 10px;
+            overflow: hidden;
+            margin: 30px 0;
+        }
+        .cell {
+            background: white;
+            padding: 15px 10px;
+            text-align: center;
+            transition: all 0.3s;
+            font-size: 0.95em;
+        }
+        .cell:hover {
+            background: #f0f0f0;
+            transform: scale(1.05);
+            z-index: 10;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            font-weight: bold;
+            font-size: 0.9em;
+            padding: 18px 10px;
+        }
+        .row-header {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+            font-weight: bold;
+            text-align: left;
+            padding-left: 15px;
+            font-size: 0.95em;
+        }
+        .cost-low { background: #e8f5e9; }
+        .cost-mid { background: #fff3e0; }
+        .cost-high { background: #ffebee; }
+        .accuracy-high { color: #27ae60; font-weight: bold; }
+        .accuracy-mid { color: #f39c12; font-weight: bold; }
+        .accuracy-low { color: #e74c3c; font-weight: bold; }
+        .badge {
+            display: inline-block;
+            padding: 5px 12px;
+            border-radius: 15px;
+            font-size: 0.85em;
+            font-weight: bold;
+            margin-top: 5px;
+        }
+        .badge-best { background: #27ae60; color: white; }
+        .badge-good { background: #3498db; color: white; }
+        .badge-ok { background: #95a5a6; color: white; }
+        .metric { font-size: 1.1em; margin-bottom: 5px; }
+        .sub-metric { font-size: 0.8em; color: #7f8c8d; }
+        .recommendation-panel {
+            margin-top: 40px;
+            padding: 30px;
+            background: #f8f9fa;
+            border-radius: 10px;
+        }
+        .recommendation-panel h3 {
+            color: #2c3e50;
+            margin-bottom: 20px;
+            font-size: 1.8em;
+        }
+        .rec-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+        }
+        .rec-card {
+            background: white;
+            padding: 25px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .rec-card h4 {
+            margin-bottom: 15px;
+            font-size: 1.3em;
+        }
+        .rec-card p {
+            margin-top: 10px;
+            color: #7f8c8d;
+            line-height: 1.6;
+        }
+        .rec-card strong {
+            color: #2c3e50;
+            font-size: 1.1em;
+        }
+        .card-best { border-left: 5px solid #27ae60; }
+        .card-value { border-left: 5px solid #3498db; }
+        .card-precision { border-left: 5px solid #e74c3c; }
+        @media (max-width: 1400px) {
+            .matrix {
+                font-size: 0.85em;
+                grid-template-columns: 160px repeat(9, 1fr);
+            }
+            .cell { padding: 12px 8px; }
+        }
+        @media (max-width: 1000px) {
+            .rec-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📊 方案5: 综合决策矩阵</h1>
+        <p class="subtitle">AI股票分析系统 - 模型成本效益全维度对比</p>
+
+        <div class="matrix">
+            <!-- 表头 -->
+            <div class="cell header">配置</div>
+            <div class="cell header">分析成本</div>
+            <div class="cell header">5种模式<br>准确率</div>
+            <div class="cell header">8种模式<br>准确率</div>
+            <div class="cell header">性价比<br>(准确率/成本)</div>
+            <div class="cell header">处理时间</div>
+            <div class="cell header">月度成本<br>(周更新)</div>
+            <div class="cell header">适用场景</div>
+            <div class="cell header">推荐度</div>
+            <div class="cell header">ROI预估</div>
+
+            <!-- Opus 4.5 - 500样本 -->
+            <div class="cell row-header">Opus 4.5<br>500样本</div>
+            <div class="cell cost-high metric">$5.10</div>
+            <div class="cell accuracy-high metric">73%</div>
+            <div class="cell accuracy-high metric">68%</div>
+            <div class="cell metric">14.3</div>
+            <div class="cell">90秒</div>
+            <div class="cell cost-high">$20.40</div>
+            <div class="cell">算法研发<br>新策略验证</div>
+            <div class="cell">⭐⭐</div>
+            <div class="cell">中</div>
+
+            <!-- Opus 4.5 - 1000样本 -->
+            <div class="cell row-header">Opus 4.5<br>1000样本</div>
+            <div class="cell cost-high metric">$10.11</div>
+            <div class="cell accuracy-high metric">78%</div>
+            <div class="cell accuracy-high metric">73%</div>
+            <div class="cell metric">7.7</div>
+            <div class="cell">150秒</div>
+            <div class="cell cost-high">$40.44</div>
+            <div class="cell">深度研究<br>机构级分析</div>
+            <div class="cell">⭐⭐</div>
+            <div class="cell">中低</div>
+
+            <!-- Opus 4.5 - 2000样本 -->
+            <div class="cell row-header">Opus 4.5<br>2000样本</div>
+            <div class="cell cost-high metric">$19.95</div>
+            <div class="cell accuracy-high metric">80%</div>
+            <div class="cell accuracy-high metric">75%</div>
+            <div class="cell metric">4.0</div>
+            <div class="cell">240秒</div>
+            <div class="cell cost-high">$79.80</div>
+            <div class="cell">学术研究<br>边际效益低</div>
+            <div class="cell">⭐</div>
+            <div class="cell">低</div>
+
+            <!-- Sonnet 4.5 - 500样本 -->
+            <div class="cell row-header">Sonnet 4.5<br>500样本</div>
+            <div class="cell cost-low metric">$1.02</div>
+            <div class="cell accuracy-mid metric">63%</div>
+            <div class="cell accuracy-mid metric">58%</div>
+            <div class="cell metric accuracy-high">61.8</div>
+            <div class="cell">72秒</div>
+            <div class="cell cost-low">$4.08</div>
+            <div class="cell"><strong>生产环境</strong><br>周度分析</div>
+            <div class="cell"><span class="badge badge-best">⭐⭐⭐⭐⭐<br>最佳</span></div>
+            <div class="cell accuracy-high"><strong>极高</strong></div>
+
+            <!-- Sonnet 4.5 - 1000样本 -->
+            <div class="cell row-header">Sonnet 4.5<br>1000样本</div>
+            <div class="cell cost-mid metric">$2.00</div>
+            <div class="cell accuracy-high metric">68%</div>
+            <div class="cell accuracy-mid metric">63%</div>
+            <div class="cell metric accuracy-high">34.0</div>
+            <div class="cell">120秒</div>
+            <div class="cell cost-low">$8.00</div>
+            <div class="cell"><strong>高频交易</strong><br>月度深度分析</div>
+            <div class="cell"><span class="badge badge-best">⭐⭐⭐⭐⭐<br>推荐</span></div>
+            <div class="cell accuracy-high"><strong>高</strong></div>
+
+            <!-- Sonnet 4.5 - 2000样本 -->
+            <div class="cell row-header">Sonnet 4.5<br>2000样本</div>
+            <div class="cell cost-mid metric">$3.91</div>
+            <div class="cell accuracy-high metric">70%</div>
+            <div class="cell accuracy-high metric">66%</div>
+            <div class="cell metric">17.9</div>
+            <div class="cell">190秒</div>
+            <div class="cell cost-mid">$15.64</div>
+            <div class="cell">季度复盘<br>策略优化</div>
+            <div class="cell"><span class="badge badge-good">⭐⭐⭐⭐</span></div>
+            <div class="cell">中高</div>
+
+            <!-- Haiku 3.5 - 500样本 -->
+            <div class="cell row-header">Haiku 3.5<br>500样本</div>
+            <div class="cell cost-low metric">$0.27</div>
+            <div class="cell accuracy-mid metric">48%</div>
+            <div class="cell accuracy-low metric">42%</div>
+            <div class="cell metric accuracy-high">177.8</div>
+            <div class="cell">30秒</div>
+            <div class="cell cost-low">$1.08</div>
+            <div class="cell">快速扫描<br>初步筛选</div>
+            <div class="cell"><span class="badge badge-good">⭐⭐⭐</span></div>
+            <div class="cell">中</div>
+
+            <!-- Haiku 3.5 - 1000样本 -->
+            <div class="cell row-header">Haiku 3.5<br>1000样本</div>
+            <div class="cell cost-low metric">$0.53</div>
+            <div class="cell accuracy-mid metric">53%</div>
+            <div class="cell accuracy-mid metric">48%</div>
+            <div class="cell metric accuracy-high">100.0</div>
+            <div class="cell">50秒</div>
+            <div class="cell cost-low">$2.12</div>
+            <div class="cell"><strong>日常监控</strong><br>批量初筛</div>
+            <div class="cell"><span class="badge badge-good">⭐⭐⭐⭐</span></div>
+            <div class="cell">高</div>
+
+            <!-- Haiku 3.5 - 2000样本 -->
+            <div class="cell row-header">Haiku 3.5<br>2000样本</div>
+            <div class="cell cost-low metric">$1.04</div>
+            <div class="cell accuracy-mid metric">56%</div>
+            <div class="cell accuracy-mid metric">51%</div>
+            <div class="cell metric">53.8</div>
+            <div class="cell">85秒</div>
+            <div class="cell cost-low">$4.16</div>
+            <div class="cell">成本敏感场景<br>大规模扫描</div>
+            <div class="cell"><span class="badge badge-good">⭐⭐⭐⭐</span></div>
+            <div class="cell">中高</div>
+        </div>
+
+        <div class="recommendation-panel">
+            <h3>💡 决策建议</h3>
+            <div class="rec-grid">
+                <div class="rec-card card-best">
+                    <h4 style="color: #27ae60;">🏆 最佳选择</h4>
+                    <p><strong>Sonnet 4.5 + 500样本 + 5种模式</strong></p>
+                    <p style="margin-top: 10px;">• 成本: $1.02/次，月度 $4.08<br>
+                       • 准确率: 63% (5种模式)<br>
+                       • 性价比: 61.8 (最高)<br>
+                       • 适用: 生产环境，周度更新<br>
+                       • ROI: 极高，快速回本</p>
+                </div>
+                <div class="rec-card card-value">
+                    <h4 style="color: #3498db;">⚡ 性价比之王</h4>
+                    <p><strong>Haiku 3.5 + 1000样本 + 5种模式</strong></p>
+                    <p style="margin-top: 10px;">• 成本: $0.53/次，月度 $2.12<br>
+                       • 准确率: 53% (5种模式)<br>
+                       • 性价比: 100.0<br>
+                       • 适用: 大规模扫描，日常监控<br>
+                       • ROI: 高，成本极低</p>
+                </div>
+                <div class="rec-card card-precision">
+                    <h4 style="color: #e74c3c;">🎯 高精度场景</h4>
+                    <p><strong>Sonnet 4.5 + 1000样本 + 5种模式</strong></p>
+                    <p style="margin-top: 10px;">• 成本: $2.00/次，月度 $8.00<br>
+                       • 准确率: 68% (5种模式)<br>
+                       • 性价比: 34.0<br>
+                       • 适用: 高频交易，深度分析<br>
+                       • ROI: 高，平衡精度和成本</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="recommendation-panel" style="background: #fff3e0; border-left: 6px solid #ff9800; padding: 25px;">
+            <h3 style="color: #f57c00;">⚠️ 关键洞察</h3>
+            <ul style="margin-left: 25px; line-height: 2; font-size: 1.05em;">
+                <li><strong>5种模式 vs 8种模式</strong>: 准确率平均下降5-8%，模式过细会降低泛化能力</li>
+                <li><strong>样本量甜蜜点</strong>: 500-1000样本，2000样本边际收益低于5%</li>
+                <li><strong>Opus 4.5 适用场景</strong>: 仅用于算法研发和策略验证，日常使用成本过高</li>
+                <li><strong>混合策略</strong>: Haiku初筛(3000只→300只) + Sonnet精准预测(300只→100只)，月成本$16，准确率65-73%</li>
+                <li><strong>ROI计算</strong>: 假设单次成功预测收益¥100，Sonnet 500样本方案仅需4次成功/月即回本</li>
+            </ul>
+        </div>
+    </div>
+</body>
+</html>

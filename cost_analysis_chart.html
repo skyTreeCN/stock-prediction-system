@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>方案2: 分组柱状图+折线图 - AI成本效益分析</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Microsoft YaHei', 'PingFang SC', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 40px 20px;
+        }
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+        h1 {
+            text-align: center;
+            color: #2c3e50;
+            margin-bottom: 15px;
+            font-size: 2.5em;
+        }
+        .subtitle {
+            text-align: center;
+            color: #7f8c8d;
+            margin-bottom: 40px;
+            font-size: 1.2em;
+        }
+        .legend-box {
+            display: flex;
+            gap: 30px;
+            justify-content: center;
+            margin: 30px 0;
+            flex-wrap: wrap;
+        }
+        .legend-item {
+            padding: 12px 25px;
+            border-radius: 25px;
+            font-weight: bold;
+            font-size: 1.05em;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+        }
+        .opus {
+            background: linear-gradient(135deg, #ff6b6b 0%, #ee5a6f 100%);
+            color: white;
+        }
+        .sonnet {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+        }
+        .haiku {
+            background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+            color: white;
+        }
+        .chart-container {
+            width: 100%;
+            height: 600px;
+            margin: 40px 0;
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 25px;
+            margin: 40px 0;
+        }
+        .info-card {
+            background: white;
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            border-top: 5px solid #667eea;
+        }
+        .info-card h3 {
+            color: #2c3e50;
+            margin-bottom: 15px;
+            font-size: 1.4em;
+        }
+        .info-card ul {
+            margin-left: 20px;
+            line-height: 2;
+        }
+        .highlight-box {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            border-radius: 15px;
+            margin: 30px 0;
+            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.3);
+        }
+        .highlight-box h3 {
+            margin-bottom: 20px;
+            font-size: 1.8em;
+        }
+        .highlight-box p {
+            line-height: 1.8;
+            font-size: 1.1em;
+        }
+        @media (max-width: 1200px) {
+            .info-grid {
+                grid-template-columns: 1fr;
+            }
+            .chart-container {
+                height: 500px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📊 方案2: 分组柱状图 + 折线图</h1>
+        <p class="subtitle">样本数 vs 模型性能 vs 成本 - 多维交互式分析</p>
+
+        <div class="legend-box">
+            <div class="legend-item opus">● Opus 4.5 - 最高准确率</div>
+            <div class="legend-item sonnet">● Sonnet 4.5 - 最佳平衡</div>
+            <div class="legend-item haiku">● Haiku 3.5 - 最高性价比</div>
+        </div>
+
+        <div class="chart-container">
+            <canvas id="multiChart"></canvas>
+        </div>
+
+        <div class="highlight-box">
+            <h3>💡 图表解读说明</h3>
+            <p><strong>柱状图 (左Y轴)</strong>: 显示准确率百分比，深色柱=5种模式，浅色柱=8种模式</p>
+            <p style="margin-top: 10px;"><strong>折线图 (右Y轴)</strong>: 显示分析成本($)，虚线代表不同模型的成本曲线</p>
+            <p style="margin-top: 10px;"><strong>交互提示</strong>: 鼠标悬停在图表上可查看详细数值</p>
+        </div>
+
+        <div class="info-grid">
+            <div class="info-card" style="border-top-color: #ff6b6b;">
+                <h3>🔴 Opus 4.5 分析</h3>
+                <ul>
+                    <li><strong>优势</strong>: 准确率最高(73-80%)</li>
+                    <li><strong>劣势</strong>: 成本过高($5-20)</li>
+                    <li><strong>趋势</strong>: 样本↑ 准确率提升缓慢</li>
+                    <li><strong>适用</strong>: 仅算法研发阶段</li>
+                    <li><strong>ROI</strong>: 低,不推荐生产使用</li>
+                </ul>
+            </div>
+
+            <div class="info-card" style="border-top-color: #4facfe;">
+                <h3>🔵 Sonnet 4.5 分析</h3>
+                <ul>
+                    <li><strong>优势</strong>: 性能/成本最优($1-4)</li>
+                    <li><strong>准确率</strong>: 中高(63-70%)</li>
+                    <li><strong>趋势</strong>: 500→1000提升明显</li>
+                    <li><strong>适用</strong>: ⭐生产环境首选</li>
+                    <li><strong>ROI</strong>: 极高,快速回本</li>
+                </ul>
+            </div>
+
+            <div class="info-card" style="border-top-color: #43e97b;">
+                <h3>🟢 Haiku 3.5 分析</h3>
+                <ul>
+                    <li><strong>优势</strong>: 成本极低($0.27-1.04)</li>
+                    <li><strong>准确率</strong>: 中等(48-56%)</li>
+                    <li><strong>趋势</strong>: 1000样本性价比最优</li>
+                    <li><strong>适用</strong>: 大规模初筛扫描</li>
+                    <li><strong>ROI</strong>: 高,适合成本敏感场景</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="info-card" style="background: #e8f5e9; border-top-color: #27ae60; margin-top: 30px;">
+            <h3 style="color: #27ae60;">✅ 数据洞察</h3>
+            <ul style="line-height: 2.2; font-size: 1.05em;">
+                <li><strong>样本量影响</strong>: 500→1000准确率提升5-8%，1000→2000仅提升2-3%(边际递减)</li>
+                <li><strong>模式数影响</strong>: 8种模式比5种模式准确率低5%，过度细分降低泛化能力</li>
+                <li><strong>成本曲线</strong>: Opus成本呈指数增长，Sonnet线性增长，Haiku几乎平缓</li>
+                <li><strong>最优配置</strong>: Sonnet 4.5 + 500样本 + 5种模式 = 准确率63% + 成本$1.02</li>
+                <li><strong>混合策略</strong>: Haiku粗筛 + Sonnet精选 = 覆盖率高 + 准确率高 + 成本低</li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        const ctx = document.getElementById('multiChart').getContext('2d');
+
+        new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: ['500样本', '1000样本', '2000样本'],
+                datasets: [
+                    // Opus 5种模式
+                    {
+                        label: 'Opus - 5种模式准确率',
+                        data: [73, 78, 80],
+                        backgroundColor: 'rgba(255, 107, 107, 0.8)',
+                        borderColor: 'rgb(255, 107, 107)',
+                        borderWidth: 2,
+                        yAxisID: 'y-accuracy',
+                        stack: 'opus'
+                    },
+                    // Opus 8种模式
+                    {
+                        label: 'Opus - 8种模式准确率',
+                        data: [68, 73, 75],
+                        backgroundColor: 'rgba(255, 107, 107, 0.5)',
+                        borderColor: 'rgb(255, 107, 107)',
+                        borderWidth: 2,
+                        yAxisID: 'y-accuracy',
+                        stack: 'opus-8'
+                    },
+                    // Sonnet 5种模式
+                    {
+                        label: 'Sonnet - 5种模式准确率',
+                        data: [63, 68, 70],
+                        backgroundColor: 'rgba(79, 172, 254, 0.8)',
+                        borderColor: 'rgb(79, 172, 254)',
+                        borderWidth: 2,
+                        yAxisID: 'y-accuracy',
+                        stack: 'sonnet'
+                    },
+                    // Sonnet 8种模式
+                    {
+                        label: 'Sonnet - 8种模式准确率',
+                        data: [58, 63, 66],
+                        backgroundColor: 'rgba(79, 172, 254, 0.5)',
+                        borderColor: 'rgb(79, 172, 254)',
+                        borderWidth: 2,
+                        yAxisID: 'y-accuracy',
+                        stack: 'sonnet-8'
+                    },
+                    // Haiku 5种模式
+                    {
+                        label: 'Haiku - 5种模式准确率',
+                        data: [48, 53, 56],
+                        backgroundColor: 'rgba(67, 233, 123, 0.8)',
+                        borderColor: 'rgb(67, 233, 123)',
+                        borderWidth: 2,
+                        yAxisID: 'y-accuracy',
+                        stack: 'haiku'
+                    },
+                    // Haiku 8种模式
+                    {
+                        label: 'Haiku - 8种模式准确率',
+                        data: [42, 48, 51],
+                        backgroundColor: 'rgba(67, 233, 123, 0.5)',
+                        borderColor: 'rgb(67, 233, 123)',
+                        borderWidth: 2,
+                        yAxisID: 'y-accuracy',
+                        stack: 'haiku-8'
+                    },
+                    // 成本线 - Opus
+                    {
+                        label: 'Opus 成本',
+                        data: [5.10, 10.11, 19.95],
+                        type: 'line',
+                        borderColor: 'rgb(238, 90, 111)',
+                        backgroundColor: 'rgba(238, 90, 111, 0.1)',
+                        borderWidth: 4,
+                        borderDash: [10, 5],
+                        pointRadius: 8,
+                        pointStyle: 'rectRot',
+                        pointBackgroundColor: 'rgb(238, 90, 111)',
+                        pointBorderColor: '#fff',
+                        pointBorderWidth: 3,
+                        yAxisID: 'y-cost',
+                        fill: false
+                    },
+                    // 成本线 - Sonnet
+                    {
+                        label: 'Sonnet 成本',
+                        data: [1.02, 2.00, 3.91],
+                        type: 'line',
+                        borderColor: 'rgb(0, 242, 254)',
+                        backgroundColor: 'rgba(0, 242, 254, 0.1)',
+                        borderWidth: 4,
+                        borderDash: [10, 5],
+                        pointRadius: 8,
+                        pointStyle: 'rectRot',
+                        pointBackgroundColor: 'rgb(0, 242, 254)',
+                        pointBorderColor: '#fff',
+                        pointBorderWidth: 3,
+                        yAxisID: 'y-cost',
+                        fill: false
+                    },
+                    // 成本线 - Haiku
+                    {
+                        label: 'Haiku 成本',
+                        data: [0.27, 0.53, 1.04],
+                        type: 'line',
+                        borderColor: 'rgb(56, 249, 215)',
+                        backgroundColor: 'rgba(56, 249, 215, 0.1)',
+                        borderWidth: 4,
+                        borderDash: [10, 5],
+                        pointRadius: 8,
+                        pointStyle: 'rectRot',
+                        pointBackgroundColor: 'rgb(56, 249, 215)',
+                        pointBorderColor: '#fff',
+                        pointBorderWidth: 3,
+                        yAxisID: 'y-cost',
+                        fill: false
+                    },
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                interaction: {
+                    mode: 'index',
+                    intersect: false,
+                },
+                plugins: {
+                    title: {
+                        display: true,
+                        text: '样本数量 vs 准确率 vs 成本 - 综合对比分析',
+                        font: { size: 20, weight: 'bold' },
+                        padding: { top: 10, bottom: 30 }
+                    },
+                    legend: {
+                        position: 'bottom',
+                        labels: {
+                            padding: 20,
+                            font: { size: 12 },
+                            usePointStyle: true,
+                            boxWidth: 15
+                        }
+                    },
+                    tooltip: {
+                        backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                        padding: 15,
+                        titleFont: { size: 14, weight: 'bold' },
+                        bodyFont: { size: 13 },
+                        callbacks: {
+                            label: function(context) {
+                                let label = context.dataset.label || '';
+                                if (label.includes('成本')) {
+                                    return label + ': $' + context.parsed.y.toFixed(2);
+                                } else {
+                                    return label + ': ' + context.parsed.y + '%';
+                                }
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    'y-accuracy': {
+                        type: 'linear',
+                        position: 'left',
+                        title: {
+                            display: true,
+                            text: '预测准确率 (%)',
+                            font: { size: 16, weight: 'bold' },
+                            padding: { top: 10, bottom: 10 }
+                        },
+                        min: 0,
+                        max: 100,
+                        ticks: {
+                            stepSize: 10,
+                            font: { size: 13 }
+                        },
+                        grid: {
+                            color: 'rgba(0, 0, 0, 0.05)',
+                            drawBorder: true,
+                            borderWidth: 2
+                        }
+                    },
+                    'y-cost': {
+                        type: 'linear',
+                        position: 'right',
+                        title: {
+                            display: true,
+                            text: '分析成本 ($)',
+                            font: { size: 16, weight: 'bold' },
+                            padding: { top: 10, bottom: 10 }
+                        },
+                        min: 0,
+                        max: 25,
+                        ticks: {
+                            stepSize: 5,
+                            font: { size: 13 },
+                            callback: function(value) {
+                                return '$' + value;
+                            }
+                        },
+                        grid: {
+                            drawOnChartArea: false,
+                            drawBorder: true,
+                            borderWidth: 2
+                        }
+                    },
+                    x: {
+                        ticks: {
+                            font: { size: 14, weight: 'bold' }
+                        },
+                        grid: {
+                            display: false
+                        }
+                    }
+                }
+            }
+        });
+    </script>
+</body>
+</html>

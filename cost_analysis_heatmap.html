@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>方案3: 热力矩阵表 - AI成本效益分析</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Microsoft YaHei', 'PingFang SC', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 40px 20px;
+        }
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+        h1 {
+            text-align: center;
+            color: #2c3e50;
+            margin-bottom: 15px;
+            font-size: 2.5em;
+        }
+        .subtitle {
+            text-align: center;
+            color: #7f8c8d;
+            margin-bottom: 40px;
+            font-size: 1.2em;
+        }
+        .sample-section {
+            margin: 40px 0;
+            padding: 30px;
+            background: #f8f9fa;
+            border-radius: 15px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+        .sample-title {
+            font-size: 1.8em;
+            font-weight: bold;
+            margin-bottom: 20px;
+            padding: 15px 25px;
+            border-radius: 10px;
+            color: white;
+            text-align: center;
+        }
+        .title-500 {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        .title-1000 {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        }
+        .title-2000 {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+        }
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            background: white;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .data-table thead {
+            background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+            color: white;
+        }
+        .data-table th {
+            padding: 18px 15px;
+            text-align: center;
+            font-weight: 600;
+            font-size: 1.05em;
+        }
+        .data-table th:first-child {
+            text-align: left;
+            padding-left: 25px;
+        }
+        .data-table td {
+            padding: 18px 15px;
+            text-align: center;
+            border-bottom: 1px solid #ecf0f1;
+            font-size: 1.05em;
+        }
+        .data-table td:first-child {
+            text-align: left;
+            padding-left: 25px;
+            font-weight: bold;
+            color: #2c3e50;
+        }
+        .data-table tbody tr:hover {
+            background: #ecf0f1;
+            transform: scale(1.02);
+            transition: all 0.3s;
+        }
+        /* 热力颜色 - 成本 */
+        .cost-excellent { background: #d4edda; color: #155724; font-weight: bold; }
+        .cost-good { background: #fff3cd; color: #856404; font-weight: bold; }
+        .cost-poor { background: #f8d7da; color: #721c24; font-weight: bold; }
+        /* 热力颜色 - 准确率 */
+        .acc-excellent { background: #d1ecf1; color: #0c5460; font-weight: bold; }
+        .acc-good { background: #cce5ff; color: #004085; font-weight: bold; }
+        .acc-fair { background: #e2e3e5; color: #383d41; font-weight: bold; }
+        /* 热力颜色 - 性价比 */
+        .value-excellent { background: #d4edda; color: #155724; font-weight: bold; }
+        .value-good { background: #d1ecf1; color: #0c5460; font-weight: bold; }
+        .value-fair { background: #fff3cd; color: #856404; font-weight: bold; }
+        /* 推荐度 */
+        .rec-5 { color: #27ae60; font-size: 1.3em; }
+        .rec-4 { color: #3498db; font-size: 1.2em; }
+        .rec-3 { color: #f39c12; font-size: 1.1em; }
+        .rec-2 { color: #e74c3c; font-size: 1em; }
+        .legend {
+            display: flex;
+            justify-content: center;
+            gap: 40px;
+            margin: 30px 0;
+            padding: 25px;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 1.05em;
+        }
+        .legend-color {
+            width: 40px;
+            height: 25px;
+            border-radius: 5px;
+            border: 1px solid #ddd;
+        }
+        .note {
+            font-size: 0.9em;
+            color: #7f8c8d;
+            font-style: italic;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔥 方案3: 热力矩阵表</h1>
+        <p class="subtitle">一目了然的成本效益对比 - 颜色越深代表越优</p>
+
+        <div class="legend">
+            <div class="legend-item">
+                <span class="legend-color" style="background: #d4edda;"></span>
+                <span>优秀</span>
+            </div>
+            <div class="legend-item">
+                <span class="legend-color" style="background: #fff3cd;"></span>
+                <span>良好</span>
+            </div>
+            <div class="legend-item">
+                <span class="legend-color" style="background: #f8d7da;"></span>
+                <span>需优化</span>
+            </div>
+            <div class="legend-item">
+                <span style="font-weight: bold;">⭐ 数量 = 推荐度</span>
+            </div>
+        </div>
+
+        <!-- 500样本 -->
+        <div class="sample-section">
+            <div class="sample-title title-500">📊 样本数: 500</div>
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>模型</th>
+                        <th>成本($)</th>
+                        <th>5种准确率</th>
+                        <th>8种准确率</th>
+                        <th>性价比</th>
+                        <th>推荐度</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Opus 4.5</td>
+                        <td class="cost-poor">$5.10</td>
+                        <td class="acc-excellent">73%</td>
+                        <td class="acc-excellent">68%</td>
+                        <td class="value-fair">14.3</td>
+                        <td class="rec-2">⭐⭐</td>
+                    </tr>
+                    <tr>
+                        <td>Sonnet 4.5</td>
+                        <td class="cost-excellent">$1.02</td>
+                        <td class="acc-good">63%</td>
+                        <td class="acc-good">58%</td>
+                        <td class="value-excellent">61.8</td>
+                        <td class="rec-5">⭐⭐⭐⭐⭐</td>
+                    </tr>
+                    <tr>
+                        <td>Haiku 3.5</td>
+                        <td class="cost-excellent">$0.27</td>
+                        <td class="acc-fair">48%</td>
+                        <td class="acc-fair">42%</td>
+                        <td class="value-excellent">177.8</td>
+                        <td class="rec-3">⭐⭐⭐</td>
+                    </tr>
+                </tbody>
+            </table>
+            <p class="note">* 性价比 = 准确率/成本，值越大越优</p>
+        </div>
+
+        <!-- 1000样本 -->
+        <div class="sample-section">
+            <div class="sample-title title-1000">📊 样本数: 1000</div>
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>模型</th>
+                        <th>成本($)</th>
+                        <th>5种准确率</th>
+                        <th>8种准确率</th>
+                        <th>性价比</th>
+                        <th>推荐度</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Opus 4.5</td>
+                        <td class="cost-poor">$10.11</td>
+                        <td class="acc-excellent">78%</td>
+                        <td class="acc-excellent">73%</td>
+                        <td class="value-fair">7.7</td>
+                        <td class="rec-2">⭐⭐</td>
+                    </tr>
+                    <tr>
+                        <td>Sonnet 4.5</td>
+                        <td class="cost-good">$2.00</td>
+                        <td class="acc-excellent">68%</td>
+                        <td class="acc-good">63%</td>
+                        <td class="value-good">34.0</td>
+                        <td class="rec-5">⭐⭐⭐⭐⭐</td>
+                    </tr>
+                    <tr>
+                        <td>Haiku 3.5</td>
+                        <td class="cost-excellent">$0.53</td>
+                        <td class="acc-good">53%</td>
+                        <td class="acc-fair">48%</td>
+                        <td class="value-excellent">100.0</td>
+                        <td class="rec-4">⭐⭐⭐⭐</td>
+                    </tr>
+                </tbody>
+            </table>
+            <p class="note">* 1000样本是准确率提升和成本控制的平衡点</p>
+        </div>
+
+        <!-- 2000样本 -->
+        <div class="sample-section">
+            <div class="sample-title title-2000">📊 样本数: 2000</div>
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>模型</th>
+                        <th>成本($)</th>
+                        <th>5种准确率</th>
+                        <th>8种准确率</th>
+                        <th>性价比</th>
+                        <th>推荐度</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Opus 4.5</td>
+                        <td class="cost-poor">$19.95</td>
+                        <td class="acc-excellent">80%</td>
+                        <td class="acc-excellent">75%</td>
+                        <td class="value-fair">4.0</td>
+                        <td class="rec-2">⭐⭐</td>
+                    </tr>
+                    <tr>
+                        <td>Sonnet 4.5</td>
+                        <td class="cost-good">$3.91</td>
+                        <td class="acc-excellent">70%</td>
+                        <td class="acc-excellent">66%</td>
+                        <td class="value-fair">17.9</td>
+                        <td class="rec-4">⭐⭐⭐⭐</td>
+                    </tr>
+                    <tr>
+                        <td>Haiku 3.5</td>
+                        <td class="cost-excellent">$1.04</td>
+                        <td class="acc-good">56%</td>
+                        <td class="acc-good">51%</td>
+                        <td class="value-good">53.8</td>
+                        <td class="rec-4">⭐⭐⭐⭐</td>
+                    </tr>
+                </tbody>
+            </table>
+            <p class="note">* 2000样本边际收益低，准确率仅提升2-3%但成本翻倍</p>
+        </div>
+
+        <!-- 综合对比 -->
+        <div class="sample-section" style="background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%);">
+            <div class="sample-title" style="background: linear-gradient(135deg, #27ae60 0%, #229954 100%);">
+                🎯 综合对比 - 跨样本量分析
+            </div>
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>配置</th>
+                        <th>单次成本</th>
+                        <th>月成本<br>(周更新)</th>
+                        <th>5种准确率</th>
+                        <th>8种准确率</th>
+                        <th>综合评分</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr style="background: #fff9c4; border-left: 5px solid #fdd835;">
+                        <td><strong>🏆 Sonnet 500样本</strong></td>
+                        <td class="cost-excellent">$1.02</td>
+                        <td class="cost-excellent">$4.08</td>
+                        <td class="acc-good">63%</td>
+                        <td class="acc-good">58%</td>
+                        <td class="rec-5" style="font-size: 1.5em;">⭐⭐⭐⭐⭐</td>
+                    </tr>
+                    <tr style="background: #e1f5fe;">
+                        <td><strong>🎯 Sonnet 1000样本</strong></td>
+                        <td class="cost-good">$2.00</td>
+                        <td class="cost-good">$8.00</td>
+                        <td class="acc-excellent">68%</td>
+                        <td class="acc-good">63%</td>
+                        <td class="rec-5" style="font-size: 1.4em;">⭐⭐⭐⭐⭐</td>
+                    </tr>
+                    <tr style="background: #f3e5f5;">
+                        <td><strong>⚡ Haiku 1000样本</strong></td>
+                        <td class="cost-excellent">$0.53</td>
+                        <td class="cost-excellent">$2.12</td>
+                        <td class="acc-good">53%</td>
+                        <td class="acc-fair">48%</td>
+                        <td class="rec-4" style="font-size: 1.3em;">⭐⭐⭐⭐</td>
+                    </tr>
+                    <tr>
+                        <td>Opus 1000样本</td>
+                        <td class="cost-poor">$10.11</td>
+                        <td class="cost-poor">$40.44</td>
+                        <td class="acc-excellent">78%</td>
+                        <td class="acc-excellent">73%</td>
+                        <td class="rec-2">⭐⭐</td>
+                    </tr>
+                    <tr>
+                        <td>Sonnet 2000样本</td>
+                        <td class="cost-good">$3.91</td>
+                        <td class="cost-good">$15.64</td>
+                        <td class="acc-excellent">70%</td>
+                        <td class="acc-excellent">66%</td>
+                        <td class="rec-4">⭐⭐⭐⭐</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- 关键发现 -->
+        <div class="sample-section" style="background: #fff3e0; border-left: 6px solid #ff9800;">
+            <h2 style="color: #f57c00; margin-bottom: 20px;">📌 关键发现</h2>
+            <ul style="line-height: 2.2; font-size: 1.1em; margin-left: 25px;">
+                <li><strong>成本甜蜜点</strong>: 500-1000样本，性价比最优</li>
+                <li><strong>准确率天花板</strong>: 80%左右(Opus 2000样本)，继续增加样本意义不大</li>
+                <li><strong>5种 vs 8种模式</strong>: 8种模式准确率下降5-8%，建议用5种</li>
+                <li><strong>Opus定位</strong>: 仅用于研发验证，生产环境不推荐</li>
+                <li><strong>最佳组合</strong>: Sonnet 4.5 + 500样本 + 5种模式 = 月成本$4，准确率63%</li>
+            </ul>
+        </div>
+    </div>
+</body>
+</html>

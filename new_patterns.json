@@ -1,0 +1,87 @@
+{
+  "patterns": [
+    {
+      "pattern_name": "中低位放量突破上升",
+      "description": "股价在相对低位经过小幅震荡后，出现明显的放量突破，随后持续上涨。特征是前期成交量相对平稳，突破时成交量显著放大2-3倍，股价快速脱离底部区间，形成持续上升趋势。",
+      "parameters": {
+        "observation_period": 14,
+        "base_volume_days": 4,
+        "breakout_volume_multiplier": 2.5,
+        "price_increase_threshold": 0.15,
+        "consolidation_range": 0.08,
+        "momentum_threshold": 0.25
+      },
+      "match_rules": [
+        "前4个交易日成交量相对平稳，日均波动不超过50%",
+        "突破当日成交量相比前期平均成交量放大2.5倍以上",
+        "突破当日收盘价较前期高点上涨15%以上",
+        "突破前股价在8%的区间内震荡整理至少3个交易日",
+        "突破后3-5个交易日内股价继续上涨，累计涨幅超过10%",
+        "整个观察期内总涨幅达到25%以上",
+        "成交量在突破后维持相对高位，不出现急剧萎缩",
+        "价格走势呈现明显的阶梯式上升特征"
+      ],
+      "pattern_id": "AI000",
+      "pattern_type": "ai_discovered",
+      "is_active": true,
+      "cluster_id": 0,
+      "cluster_size": 16,
+      "cluster_stats": {
+        "volatility": 0.09314260950515706,
+        "volume_trend": 2.5274774877819244,
+        "momentum": 0.30891535887053234,
+        "total_rise": 0.30891535887053234
+      }
+    },
+    {
+      "pattern_name": "低波动震荡后温和反弹",
+      "description": "股价在低波动率环境下经历小幅震荡整理，随后出现温和反弹。特征为价格波动幅度小，成交量相对稳定，最终日出现明显放量上涨突破前期高点",
+      "parameters": {
+        "volatility_threshold": 0.035,
+        "volume_change_range": [
+          0.8,
+          1.2
+        ],
+        "momentum_range": [
+          2.5,
+          4.5
+        ],
+        "consolidation_days": [
+          10,
+          15
+        ],
+        "final_day_volume_increase": 1.2,
+        "price_range_compression": 0.15,
+        "breakthrough_amplitude": 0.02
+      },
+      "match_rules": [
+        "14日内整体波动率低于3.5%",
+        "成交量变化倍数在0.8-1.2倍之间，无异常放量",
+        "前期存在7-10个交易日的横盘整理阶段",
+        "整理期间价格波动范围压缩至15%以内",
+        "最后一个交易日成交量较前日增长20%以上",
+        "最终日收盘价突破前期整理平台高点2%以上",
+        "总涨幅控制在2.5%-4.5%区间内",
+        "无连续大阴线或大阳线，走势相对温和"
+      ],
+      "pattern_id": "AI001",
+      "pattern_type": "ai_discovered",
+      "is_active": true,
+      "cluster_id": 1,
+      "cluster_size": 90,
+      "cluster_stats": {
+        "volatility": 0.03012471747303708,
+        "volume_trend": 1.011524993054245,
+        "momentum": 0.033524729263521305,
+        "total_rise": 0.033524729263521305
+      }
+    }
+  ],
+  "metadata": {
+    "version": "1.0",
+    "created_date": "2025-12-11",
+    "method": "AI extraction with Claude Sonnet 4",
+    "cluster_count": 2,
+    "total_samples": 106
+  }
+}

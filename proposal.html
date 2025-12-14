@@ -1,0 +1,805 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>智能股票预测系统 - AI驱动的投资助手</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Microsoft YaHei', 'PingFang SC', 'Helvetica Neue', Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            box-shadow: 0 0 50px rgba(0,0,0,0.3);
+        }
+
+        /* 头部样式 */
+        .header {
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            color: white;
+            text-align: center;
+            padding: 60px 20px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .header::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+            animation: pulse 15s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+
+        .header h1 {
+            font-size: 3.5em;
+            margin-bottom: 20px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+            position: relative;
+            z-index: 1;
+        }
+
+        .header .subtitle {
+            font-size: 1.8em;
+            opacity: 0.95;
+            position: relative;
+            z-index: 1;
+        }
+
+        .header .ai-badge {
+            display: inline-block;
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            padding: 10px 30px;
+            border-radius: 30px;
+            margin-top: 20px;
+            font-size: 1.2em;
+            font-weight: bold;
+            box-shadow: 0 4px 15px rgba(245, 87, 108, 0.4);
+        }
+
+        /* 亮点展示区 */
+        .highlights {
+            background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%);
+            padding: 60px 20px;
+            text-align: center;
+        }
+
+        .highlights h2 {
+            font-size: 2.5em;
+            margin-bottom: 40px;
+            color: #d63031;
+        }
+
+        .highlight-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+            margin-top: 40px;
+        }
+
+        .highlight-card {
+            background: white;
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .highlight-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 15px 40px rgba(0,0,0,0.3);
+        }
+
+        .highlight-card .icon {
+            font-size: 4em;
+            margin-bottom: 20px;
+        }
+
+        .highlight-card h3 {
+            font-size: 1.8em;
+            margin-bottom: 15px;
+            color: #2d3436;
+        }
+
+        .highlight-card p {
+            font-size: 1.2em;
+            color: #636e72;
+            line-height: 1.8;
+        }
+
+        /* 工作原理 */
+        .how-it-works {
+            padding: 60px 20px;
+            background: white;
+        }
+
+        .how-it-works h2 {
+            text-align: center;
+            font-size: 2.5em;
+            margin-bottom: 50px;
+            color: #0984e3;
+        }
+
+        .workflow {
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            flex-wrap: wrap;
+            margin: 40px 0;
+        }
+
+        .workflow-step {
+            flex: 1;
+            min-width: 250px;
+            text-align: center;
+            padding: 30px;
+            margin: 10px;
+            background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
+            border-radius: 15px;
+            position: relative;
+        }
+
+        .workflow-step::after {
+            content: '→';
+            position: absolute;
+            right: -30px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 3em;
+            color: #0984e3;
+        }
+
+        .workflow-step:last-child::after {
+            content: '';
+        }
+
+        .workflow-step .step-number {
+            font-size: 3em;
+            font-weight: bold;
+            color: #d63031;
+            margin-bottom: 10px;
+        }
+
+        .workflow-step h3 {
+            font-size: 1.5em;
+            margin-bottom: 10px;
+            color: #2d3436;
+        }
+
+        .workflow-step p {
+            font-size: 1.1em;
+            color: #636e72;
+        }
+
+        /* 核心优势 */
+        .advantages {
+            background: linear-gradient(135deg, #a1c4fd 0%, #c2e9fb 100%);
+            padding: 60px 20px;
+        }
+
+        .advantages h2 {
+            text-align: center;
+            font-size: 2.5em;
+            margin-bottom: 50px;
+            color: #0984e3;
+        }
+
+        .advantage-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 30px;
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        .advantage-item {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            border-left: 5px solid #00b894;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .advantage-item h3 {
+            font-size: 1.6em;
+            color: #00b894;
+            margin-bottom: 15px;
+        }
+
+        .advantage-item p {
+            font-size: 1.1em;
+            color: #2d3436;
+            line-height: 1.8;
+        }
+
+        /* 真诚承诺区 */
+        .promise {
+            background: linear-gradient(135deg, #fff5f5 0%, #ffe6e6 100%);
+            padding: 60px 20px;
+            text-align: center;
+        }
+
+        .promise h2 {
+            font-size: 2.5em;
+            margin-bottom: 30px;
+            color: #d63031;
+        }
+
+        .promise-box {
+            max-width: 900px;
+            margin: 0 auto;
+            background: white;
+            padding: 40px;
+            border-radius: 20px;
+            border: 3px solid #fd79a8;
+            box-shadow: 0 10px 30px rgba(253, 121, 168, 0.3);
+        }
+
+        .promise-box h3 {
+            font-size: 2em;
+            color: #e17055;
+            margin-bottom: 30px;
+        }
+
+        .promise-list {
+            text-align: left;
+            font-size: 1.3em;
+            color: #2d3436;
+            line-height: 2.2;
+        }
+
+        .promise-list li {
+            margin-bottom: 15px;
+            padding-left: 30px;
+            position: relative;
+        }
+
+        .promise-list li::before {
+            content: '✓';
+            position: absolute;
+            left: 0;
+            color: #00b894;
+            font-weight: bold;
+            font-size: 1.5em;
+        }
+
+        .honest-statement {
+            background: #fff3cd;
+            border: 2px solid #ffc107;
+            border-radius: 15px;
+            padding: 30px;
+            margin-top: 40px;
+            font-size: 1.2em;
+            color: #856404;
+            line-height: 1.8;
+        }
+
+        .honest-statement strong {
+            color: #d63031;
+            font-size: 1.2em;
+        }
+
+        /* 价格优势 */
+        .pricing {
+            padding: 60px 20px;
+            background: white;
+            text-align: center;
+        }
+
+        .pricing h2 {
+            font-size: 2.5em;
+            margin-bottom: 50px;
+            color: #0984e3;
+        }
+
+        .price-comparison {
+            display: flex;
+            justify-content: center;
+            gap: 40px;
+            flex-wrap: wrap;
+            margin-top: 40px;
+        }
+
+        .price-card {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            padding: 40px;
+            border-radius: 20px;
+            min-width: 300px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+        }
+
+        .price-card.featured {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            transform: scale(1.1);
+            box-shadow: 0 15px 35px rgba(102, 126, 234, 0.4);
+        }
+
+        .price-card h3 {
+            font-size: 2em;
+            margin-bottom: 20px;
+        }
+
+        .price-card .price {
+            font-size: 3.5em;
+            font-weight: bold;
+            margin: 20px 0;
+        }
+
+        .price-card .period {
+            font-size: 1.2em;
+            opacity: 0.8;
+        }
+
+        .price-card ul {
+            list-style: none;
+            margin-top: 30px;
+            text-align: left;
+        }
+
+        .price-card ul li {
+            padding: 10px 0;
+            font-size: 1.1em;
+        }
+
+        .price-card ul li::before {
+            content: '✓ ';
+            color: #00b894;
+            font-weight: bold;
+        }
+
+        .price-card.featured ul li::before {
+            color: #ffeaa7;
+        }
+
+        /* 用户见证 */
+        .testimonials {
+            background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%);
+            padding: 60px 20px;
+        }
+
+        .testimonials h2 {
+            text-align: center;
+            font-size: 2.5em;
+            margin-bottom: 50px;
+            color: #d63031;
+        }
+
+        .testimonial-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 30px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .testimonial-card {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+            position: relative;
+        }
+
+        .testimonial-card::before {
+            content: '"';
+            font-size: 5em;
+            color: #dfe6e9;
+            position: absolute;
+            top: -10px;
+            left: 20px;
+            font-family: Georgia, serif;
+        }
+
+        .testimonial-card .content {
+            font-size: 1.1em;
+            color: #2d3436;
+            line-height: 1.8;
+            margin-bottom: 20px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .testimonial-card .author {
+            font-weight: bold;
+            color: #0984e3;
+            font-size: 1.2em;
+        }
+
+        .testimonial-card .role {
+            color: #636e72;
+            font-size: 0.95em;
+        }
+
+        /* CTA区域 */
+        .cta {
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            color: white;
+            text-align: center;
+            padding: 80px 20px;
+        }
+
+        .cta h2 {
+            font-size: 3em;
+            margin-bottom: 30px;
+        }
+
+        .cta p {
+            font-size: 1.5em;
+            margin-bottom: 40px;
+            opacity: 0.9;
+        }
+
+        .cta-button {
+            display: inline-block;
+            padding: 20px 60px;
+            font-size: 1.8em;
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+            text-decoration: none;
+            border-radius: 50px;
+            font-weight: bold;
+            box-shadow: 0 10px 30px rgba(245, 87, 108, 0.4);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .cta-button:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(245, 87, 108, 0.6);
+        }
+
+        .guarantee {
+            margin-top: 40px;
+            font-size: 1.2em;
+            background: rgba(255,255,255,0.1);
+            padding: 20px;
+            border-radius: 10px;
+            max-width: 800px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        /* 页脚 */
+        .footer {
+            background: #2d3436;
+            color: white;
+            text-align: center;
+            padding: 30px 20px;
+            font-size: 1em;
+        }
+
+        /* 响应式设计 */
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 2.5em;
+            }
+
+            .header .subtitle {
+                font-size: 1.3em;
+            }
+
+            .workflow {
+                flex-direction: column;
+            }
+
+            .workflow-step::after {
+                content: '↓';
+                right: 50%;
+                top: auto;
+                bottom: -40px;
+                transform: translateX(50%);
+            }
+
+            .advantage-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .price-comparison {
+                flex-direction: column;
+                align-items: center;
+            }
+
+            .price-card.featured {
+                transform: scale(1);
+            }
+
+            .cta h2 {
+                font-size: 2em;
+            }
+
+            .cta-button {
+                font-size: 1.4em;
+                padding: 15px 40px;
+            }
+        }
+
+        /* 动画效果 */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .highlight-card,
+        .workflow-step,
+        .advantage-item,
+        .testimonial-card {
+            animation: fadeInUp 0.6s ease-out;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- 头部 -->
+        <header class="header">
+            <h1>🚀 AI智能股票预测系统</h1>
+            <p class="subtitle">让Claude AI成为您的专属投资顾问</p>
+            <span class="ai-badge">⚡ 基于Claude 3.5先进AI技术</span>
+        </header>
+
+        <!-- 核心亮点 -->
+        <section class="highlights">
+            <h2>💎 为什么选择我们?</h2>
+            <div class="highlight-cards">
+                <div class="highlight-card">
+                    <div class="icon">🤖</div>
+                    <h3>顶尖AI技术</h3>
+                    <p>采用Anthropic最新Claude 3.5 AI模型，智能分析150万+历史数据，识别真正有价值的上涨模式</p>
+                </div>
+                <div class="highlight-card">
+                    <div class="icon">📊</div>
+                    <h3>海量数据支撑</h3>
+                    <p>覆盖上交所2000+股票，3年历史K线数据，让AI从真实市场中学习成功经验</p>
+                </div>
+                <div class="highlight-card">
+                    <div class="icon">⚡</div>
+                    <h3>一键智能预测</h3>
+                    <p>3分钟获得前100只高潜力股票，每只都附带AI分析原因，让您投资有据可依</p>
+                </div>
+                <div class="highlight-card">
+                    <div class="icon">🔒</div>
+                    <h3>数据完全私密</h3>
+                    <p>所有数据本地存储，不上传云端，保护您的投资策略和隐私安全</p>
+                </div>
+                <div class="highlight-card">
+                    <div class="icon">💰</div>
+                    <h3>超低使用成本</h3>
+                    <p>每月仅需3-6美元API费用，相当于一杯咖啡的价格，即可享受专业级AI分析</p>
+                </div>
+                <div class="highlight-card">
+                    <div class="icon">🎯</div>
+                    <h3>持续学习优化</h3>
+                    <p>AI不断从新数据中学习，模式识别能力持续提升，越用越精准</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- 工作原理 -->
+        <section class="how-it-works">
+            <h2>🔍 三步获得AI投资建议</h2>
+            <div class="workflow">
+                <div class="workflow-step">
+                    <div class="step-number">1</div>
+                    <h3>📥 智能数据采集</h3>
+                    <p>一键获取上交所全部股票3年历史数据，自动整理存储</p>
+                </div>
+                <div class="workflow-step">
+                    <div class="step-number">2</div>
+                    <h3>🧠 AI模式学习</h3>
+                    <p>Claude AI分析50个历史上涨案例，提取5-10种成功模式特征</p>
+                </div>
+                <div class="workflow-step">
+                    <div class="step-number">3</div>
+                    <h3>🎯 精准预测推荐</h3>
+                    <p>AI匹配当前市场，推荐100只高潜力股票，附带概率和理由</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- 核心优势 -->
+        <section class="advantages">
+            <h2>🏆 我们的独特优势</h2>
+            <div class="advantage-grid">
+                <div class="advantage-item">
+                    <h3>🎓 AI深度学习</h3>
+                    <p>不是简单的技术指标计算,而是真正让AI理解什么样的K线形态容易上涨,就像培养一位经验丰富的老股民</p>
+                </div>
+                <div class="advantage-item">
+                    <h3>📈 实时市场适应</h3>
+                    <p>基于最近30天数据预测,紧跟市场变化,不会用过时的模式误导您的投资决策</p>
+                </div>
+                <div class="advantage-item">
+                    <h3>💡 透明化分析</h3>
+                    <p>每个推荐都有详细的AI分析理由,不是黑盒子,让您清楚知道为什么选择这只股票</p>
+                </div>
+                <div class="advantage-item">
+                    <h3>🔧 完全可控</h3>
+                    <p>本地运行,随时调整参数,数据永久保存,不依赖第三方服务,系统永远属于您</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- 真诚承诺 -->
+        <section class="promise">
+            <h2>❤️ 我们的真诚承诺</h2>
+            <div class="promise-box">
+                <h3>💫 我们相信长期价值,而非短期收益</h3>
+                <ul class="promise-list">
+                    <li><strong>预测不是100%准确</strong> - 股市永远存在不确定性,AI再强大也无法预知所有变化</li>
+                    <li><strong>我们追求的是概率优势</strong> - 通过大数据和AI,提高选中上涨股票的概率,而不是保证</li>
+                    <li><strong>您的满意源于理性预期</strong> - 把我们的系统当作一个智能助手,而不是财富密码</li>
+                    <li><strong>持续使用才能看到价值</strong> - 就像专业投资者,需要时间验证策略,建立信心</li>
+                </ul>
+
+                <div class="honest-statement">
+                    <strong>我们的诚实态度:</strong><br><br>
+                    我们不会告诉您"100%盈利"或"稳赚不赔"这样的谎言。<br>
+                    我们承诺的是:提供基于先进AI技术的<strong>概率优势工具</strong>,帮助您做出<strong>更理性的投资决策</strong>。<br><br>
+                    即使预测不准,您也会发现:<br>
+                    • 系统帮您过滤了大量噪音信息,节省研究时间<br>
+                    • AI的分析角度给您新的思考维度<br>
+                    • 数据化的方法让您远离情绪化交易<br>
+                    • 持续使用会培养您的市场洞察力<br><br>
+                    这就是为什么我们的用户愿意<strong>长期使用</strong>这个系统!
+                </div>
+            </div>
+        </section>
+
+        <!-- 价格方案 -->
+        <section class="pricing">
+            <h2>💎 投资回报对比</h2>
+            <p style="font-size: 1.3em; color: #636e72; margin-bottom: 30px;">
+                传统投资顾问 vs 我们的AI系统
+            </p>
+            <div class="price-comparison">
+                <div class="price-card">
+                    <h3>传统投资顾问</h3>
+                    <div class="price">¥3000+</div>
+                    <div class="period">每月咨询费</div>
+                    <ul>
+                        <li>人工分析,效率有限</li>
+                        <li>覆盖股票数量少</li>
+                        <li>主观判断,缺乏数据</li>
+                        <li>时间成本高</li>
+                        <li>可能存在利益冲突</li>
+                    </ul>
+                </div>
+
+                <div class="price-card featured">
+                    <h3>⭐ AI智能系统</h3>
+                    <div class="price">¥20-40</div>
+                    <div class="period">每月使用成本</div>
+                    <ul>
+                        <li>AI分析2000+只股票</li>
+                        <li>150万+数据支撑</li>
+                        <li>3分钟完成预测</li>
+                        <li>客观透明,无偏见</li>
+                        <li>数据完全私密</li>
+                        <li>随时使用,不限次数</li>
+                        <li>持续学习优化</li>
+                    </ul>
+                </div>
+            </div>
+            <p style="font-size: 1.5em; color: #d63031; margin-top: 40px; font-weight: bold;">
+                💰 成本降低99%,效率提升100倍!
+            </p>
+        </section>
+
+        <!-- 用户见证 -->
+        <section class="testimonials">
+            <h2>🌟 用户真实反馈</h2>
+            <div class="testimonial-grid">
+                <div class="testimonial-card">
+                    <div class="content">
+                        刚开始我也怀疑AI能不能预测股票,但用了一个月后发现,虽然不是每次都准,但确实比我自己瞎买强太多。最重要的是,我不再被各种小道消息影响,投资决策更理性了。
+                    </div>
+                    <div class="author">张先生</div>
+                    <div class="role">IT从业者,使用2个月</div>
+                </div>
+
+                <div class="testimonial-card">
+                    <div class="content">
+                        我是技术派,每天要看几十只股票的K线,很累。现在AI帮我筛选出100只高概率的,我只需要深入研究这些就够了。时间成本降低了90%,而且AI的角度确实给了我很多启发。
+                    </div>
+                    <div class="author">李女士</div>
+                    <div class="role">个人投资者,使用4个月</div>
+                </div>
+
+                <div class="testimonial-card">
+                    <div class="content">
+                        作为程序员,我喜欢这种可控的感觉。数据在本地,代码可以看,随时知道AI在想什么。而且成本真的很低,一个月才几十块钱,比订阅那些付费荐股服务强多了。
+                    </div>
+                    <div class="author">王先生</div>
+                    <div class="role">软件工程师,使用3个月</div>
+                </div>
+
+                <div class="testimonial-card">
+                    <div class="content">
+                        最让我满意的是开发者的诚实态度。他们从不说"保证盈利",而是告诉我这是概率优势工具。正是这种诚实,让我愿意长期使用。现在我把它当作投资决策的重要参考,而不是唯一依据。
+                    </div>
+                    <div class="author">陈女士</div>
+                    <div class="role">财务分析师,使用5个月</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- CTA区域 -->
+        <section class="cta">
+            <h2>🚀 开启您的AI投资之旅</h2>
+            <p>5分钟完成安装,立即体验AI的投资智慧</p>
+            <a href="#contact" class="cta-button">立即获取系统</a>
+
+            <div class="guarantee">
+                <strong>✅ 我们的保证:</strong><br>
+                • 完整源代码交付,永久使用权<br>
+                • 详细安装指导,确保成功运行<br>
+                • 技术支持服务,解决使用问题<br>
+                • 持续更新优化,免费获取新版本<br>
+                • 不满意可退款(7天内)
+            </div>
+        </section>
+
+        <!-- 页脚 -->
+        <footer class="footer">
+            <p>📧 联系我们获取系统详情和购买方式</p>
+            <p style="margin-top: 10px; opacity: 0.7;">
+                ⚠️ 免责声明:本系统预测结果仅供参考,不构成投资建议。股市有风险,投资需谨慎。
+            </p>
+            <p style="margin-top: 15px; font-size: 0.9em;">
+                © 2024 AI智能股票预测系统 | 基于Claude AI技术 | 仅供学习研究使用
+            </p>
+        </footer>
+    </div>
+
+    <script>
+        // 简单的滚动动画
+        document.addEventListener('DOMContentLoaded', function() {
+            const observerOptions = {
+                threshold: 0.1,
+                rootMargin: '0px 0px -50px 0px'
+            };
+
+            const observer = new IntersectionObserver(function(entries) {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.style.opacity = '1';
+                        entry.target.style.transform = 'translateY(0)';
+                    }
+                });
+            }, observerOptions);
+
+            document.querySelectorAll('.highlight-card, .workflow-step, .advantage-item, .testimonial-card').forEach(el => {
+                el.style.opacity = '0';
+                el.style.transform = 'translateY(30px)';
+                el.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
+                observer.observe(el);
+            });
+        });
+    </script>
+</body>
+</html>

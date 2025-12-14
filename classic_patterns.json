@@ -1,0 +1,71 @@
+{
+  "patterns": [
+    {
+      "pattern_id": "P001",
+      "pattern_name": "缩量震荡后放量突破",
+      "pattern_type": "classic",
+      "description": "前期缩量横盘震荡,突然放量突破前高",
+      "parameters": {
+        "consolidation_days": {"min": 2, "max": 6},
+        "volume_shrink_ratio": {"max": 1.5},
+        "breakout_volume_ratio": {"min": 1.2},
+        "price_range_during_consolidation": {"max": 0.12},
+        "breakout_rise": {"min": 0.015}
+      },
+      "match_rules": {
+        "step1": "识别5-15天的横盘区间(波动≤8%)",
+        "step2": "横盘期成交量相对平稳(≤1.0倍均量)",
+        "step3": "突破日放量(≥1.5倍)且涨幅≥2.5%",
+        "step4": "突破前高点"
+      },
+      "is_active": true
+    },
+    {
+      "pattern_id": "P002",
+      "pattern_name": "V型反转放量上攻",
+      "pattern_type": "classic",
+      "description": "快速下跌后快速反弹,形成V型,伴随放量",
+      "parameters": {
+        "decline_amplitude": {"min": 0.02},
+        "rebound_rise": {"min": 0.03},
+        "rebound_days": {"min": 2}
+      },
+      "match_rules": {
+        "step1": "识别3-10天的快速下跌(跌幅≥5%)",
+        "step2": "底部出现后2-5天快速反弹",
+        "step3": "反弹期放量(≥1.5倍均量)",
+        "step4": "反弹涨幅≥4%"
+      },
+      "is_active": true
+    },
+    {
+      "pattern_id": "P003",
+      "pattern_name": "连续放量上攻",
+      "pattern_type": "classic",
+      "description": "连续3天以上放量上涨,量价齐升",
+      "parameters": {
+        "continuous_days": {"min": 3},
+        "daily_volume_ratio": {"min": 1.0},
+        "max_volume_ratio": {"min": 1.5},
+        "daily_rise": {"min": 0.01},
+        "total_rise": {"min": 0.05},
+        "no_pullback": true
+      },
+      "match_rules": {
+        "step1": "连续3天以上大部分日期放量(>1.0倍)",
+        "step2": "期间最大成交量≥1.5倍",
+        "step3": "每日涨幅≥1%",
+        "step4": "累计涨幅≥5%",
+        "step5": "期间无明显回调(单日跌幅<1%)"
+      },
+      "is_active": true
+    }
+  ],
+  "metadata": {
+    "version": "1.0",
+    "created_date": "2025-12-10",
+    "description": "Tag2项目经典上涨模式定义",
+    "reference_period": "20天K线",
+    "volume_base": "20日平均成交量"
+  }
+}

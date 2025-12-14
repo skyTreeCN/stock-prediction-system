@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>测试预测API</title>
+    <style>
+        body { font-family: Arial; padding: 20px; }
+        button { padding: 10px 20px; font-size: 16px; cursor: pointer; }
+        #result { margin-top: 20px; white-space: pre-wrap; }
+    </style>
+</head>
+<body>
+    <h1>股票预测功能测试</h1>
+    <button onclick="runPredict()">运行预测</button>
+    <div id="result"></div>
+
+    <script>
+        async function runPredict() {
+            const resultDiv = document.getElementById('result');
+            resultDiv.textContent = '正在运行预测...';
+            
+            try {
+                const response = await fetch('http://localhost:8000/api/predict', {
+                    method: 'POST'
+                });
+                const data = await response.json();
+                resultDiv.textContent = JSON.stringify(data, null, 2);
+            } catch (error) {
+                resultDiv.textContent = '错误: ' + error.message;
+            }
+        }
+    </script>
+</body>
+</html>

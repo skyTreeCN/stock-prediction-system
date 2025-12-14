@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>方案4: 雷达图对比 - AI成本效益分析</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Microsoft YaHei', 'PingFang SC', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 40px 20px;
+        }
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+        h1 {
+            text-align: center;
+            color: #2c3e50;
+            margin-bottom: 15px;
+            font-size: 2.5em;
+        }
+        .subtitle {
+            text-align: center;
+            color: #7f8c8d;
+            margin-bottom: 40px;
+            font-size: 1.2em;
+        }
+        .legend-box {
+            display: flex;
+            gap: 30px;
+            justify-content: center;
+            margin: 30px 0;
+        }
+        .legend-item {
+            padding: 12px 25px;
+            border-radius: 25px;
+            font-weight: bold;
+            font-size: 1.1em;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+        }
+        .opus {
+            background: linear-gradient(135deg, #ff6b6b 0%, #ee5a6f 100%);
+            color: white;
+        }
+        .sonnet {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+        }
+        .haiku {
+            background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+            color: white;
+        }
+        .radar-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 30px;
+            margin: 40px 0;
+        }
+        .radar-item {
+            background: #f8f9fa;
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+        .radar-title {
+            text-align: center;
+            font-size: 1.5em;
+            font-weight: bold;
+            margin-bottom: 20px;
+            padding: 15px;
+            border-radius: 10px;
+            color: white;
+        }
+        .title-500 { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
+        .title-1000 { background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); }
+        .title-2000 { background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); }
+        canvas {
+            max-height: 400px;
+            margin: 0 auto;
+            display: block;
+        }
+        .info-panel {
+            background: #e3f2fd;
+            border-left: 6px solid #2196f3;
+            padding: 25px;
+            margin: 30px 0;
+            border-radius: 10px;
+        }
+        .info-panel h3 {
+            color: #1976d2;
+            margin-bottom: 15px;
+        }
+        .info-panel ul {
+            margin-left: 25px;
+            line-height: 2;
+        }
+        @media (max-width: 1200px) {
+            .radar-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📡 方案4: 雷达图对比分析</h1>
+        <p class="subtitle">样本量对比 - 三模型六维度评估</p>
+
+        <div class="legend-box">
+            <div class="legend-item opus">● Opus 4.5 ($15/$75)</div>
+            <div class="legend-item sonnet">● Sonnet 4.5 ($3/$15)</div>
+            <div class="legend-item haiku">● Haiku 3.5 ($0.8/$4)</div>
+        </div>
+
+        <div class="radar-grid">
+            <!-- 500样本 -->
+            <div class="radar-item">
+                <div class="radar-title title-500">500样本分析</div>
+                <canvas id="radar500"></canvas>
+            </div>
+
+            <!-- 1000样本 -->
+            <div class="radar-item">
+                <div class="radar-title title-1000">1000样本分析</div>
+                <canvas id="radar1000"></canvas>
+            </div>
+
+            <!-- 2000样本 -->
+            <div class="radar-item">
+                <div class="radar-title title-2000">2000样本分析</div>
+                <canvas id="radar2000"></canvas>
+            </div>
+        </div>
+
+        <div class="info-panel">
+            <h3>📊 雷达图维度说明</h3>
+            <ul>
+                <li><strong>5种模式准确率</strong>: 识别5种上涨模式时的预测准确率 (3天后涨幅≥10%)</li>
+                <li><strong>8种模式准确率</strong>: 识别8种上涨模式时的预测准确率 (模式越多越细分，准确率通常下降)</li>
+                <li><strong>成本效益</strong>: 性价比指标，准确率/成本的归一化值</li>
+                <li><strong>处理速度</strong>: API响应速度和数据处理时间</li>
+                <li><strong>稳定性</strong>: 多次运行结果的一致性和可靠性</li>
+                <li><strong>推荐度</strong>: 综合评分，考虑实际应用价值</li>
+            </ul>
+        </div>
+
+        <div class="info-panel" style="background: #e8f5e9; border-left-color: #4caf50;">
+            <h3 style="color: #2e7d32;">✅ 关键发现</h3>
+            <ul>
+                <li><strong>500样本</strong>: Sonnet 4.5 表现最均衡，推荐度最高</li>
+                <li><strong>1000样本</strong>: 准确率显著提升，Sonnet 4.5 性价比依然最优</li>
+                <li><strong>2000样本</strong>: 边际收益递减明显，Haiku 3.5 性价比优势凸显</li>
+                <li><strong>总体趋势</strong>: 样本量↑ → 准确率↑ 但成本效益↓</li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        const radarConfig = (data, title) => ({
+            type: 'radar',
+            data: {
+                labels: ['5种模式准确率', '8种模式准确率', '成本效益', '处理速度', '稳定性', '推荐度'],
+                datasets: [
+                    {
+                        label: 'Opus 4.5',
+                        data: data.opus,
+                        backgroundColor: 'rgba(255, 107, 107, 0.2)',
+                        borderColor: 'rgb(255, 107, 107)',
+                        borderWidth: 3,
+                        pointBackgroundColor: 'rgb(255, 107, 107)',
+                        pointBorderColor: '#fff',
+                        pointRadius: 5,
+                        pointHoverRadius: 7,
+                    },
+                    {
+                        label: 'Sonnet 4.5',
+                        data: data.sonnet,
+                        backgroundColor: 'rgba(79, 172, 254, 0.2)',
+                        borderColor: 'rgb(79, 172, 254)',
+                        borderWidth: 3,
+                        pointBackgroundColor: 'rgb(79, 172, 254)',
+                        pointBorderColor: '#fff',
+                        pointRadius: 5,
+                        pointHoverRadius: 7,
+                    },
+                    {
+                        label: 'Haiku 3.5',
+                        data: data.haiku,
+                        backgroundColor: 'rgba(67, 233, 123, 0.2)',
+                        borderColor: 'rgb(67, 233, 123)',
+                        borderWidth: 3,
+                        pointBackgroundColor: 'rgb(67, 233, 123)',
+                        pointBorderColor: '#fff',
+                        pointRadius: 5,
+                        pointHoverRadius: 7,
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: true,
+                scales: {
+                    r: {
+                        min: 0,
+                        max: 100,
+                        ticks: {
+                            stepSize: 20,
+                            font: { size: 12 }
+                        },
+                        pointLabels: {
+                            font: { size: 13, weight: 'bold' }
+                        }
+                    }
+                },
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: {
+                            padding: 20,
+                            font: { size: 14 }
+                        }
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                return context.dataset.label + ': ' + context.parsed.r + '/100';
+                            }
+                        }
+                    }
+                }
+            }
+        });
+
+        // 500样本数据 (归一化到100分制)
+        new Chart(document.getElementById('radar500'), radarConfig({
+            opus:   [73, 68, 20, 60, 90, 40],   // 准确率高但成本效益低
+            sonnet: [63, 58, 90, 80, 85, 100],  // 最佳平衡方案
+            haiku:  [48, 42, 100, 95, 70, 70]   // 高性价比但准确率偏低
+        }));
+
+        // 1000样本数据
+        new Chart(document.getElementById('radar1000'), radarConfig({
+            opus:   [78, 73, 15, 55, 95, 45],   // 准确率最高但成本过高
+            sonnet: [68, 63, 80, 75, 90, 100],  // 依然是最佳选择
+            haiku:  [53, 48, 95, 90, 75, 85]    // 性价比优势明显
+        }));
+
+        // 2000样本数据
+        new Chart(document.getElementById('radar2000'), radarConfig({
+            opus:   [80, 75, 10, 50, 98, 50],   // 边际收益极低
+            sonnet: [70, 66, 70, 70, 95, 90],   // 平衡但优势减弱
+            haiku:  [56, 51, 90, 85, 80, 90]    // 大样本下性价比最优
+        }));
+    </script>
+</body>
+</html>
