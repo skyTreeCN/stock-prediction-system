@@ -1488,47 +1488,49 @@ function StockDetailCard({ stock }: { stock: any }) {
 
       {/* 股票图表和分析 */}
       <div className="p-6">
-        {/* 量化匹配指标 */}
-        <div className="mb-6 bg-green-50 rounded-lg p-4 border-2 border-green-300">
-          <h4 className="font-semibold text-green-800 mb-3 flex items-center gap-2">
-            <span>📊</span> 量化匹配指标
-          </h4>
-          <div className="grid grid-cols-3 gap-3">
-            {stock.matchedQuantitativeData.consolidationDays && (
-              <>
-                <div className="bg-white rounded p-2 border border-green-200">
-                  <div className="text-xs text-gray-600">回调天数</div>
-                  <div className="text-lg font-bold text-purple-600">{stock.matchedQuantitativeData.consolidationDays}天</div>
-                </div>
-                <div className="bg-white rounded p-2 border border-green-200">
-                  <div className="text-xs text-gray-600">回调期成交量</div>
-                  <div className="text-lg font-bold text-blue-600">{stock.matchedQuantitativeData.avgVolumeDuring.toLocaleString()}</div>
-                  <div className="text-xs text-red-600">↓ 前期{(stock.matchedQuantitativeData.avgVolumeDuring / stock.matchedQuantitativeData.avgVolumeBefore * 100).toFixed(0)}%</div>
-                </div>
-                <div className="bg-white rounded p-2 border border-green-200">
-                  <div className="text-xs text-gray-600">突破放量比</div>
-                  <div className="text-lg font-bold text-green-600">{stock.matchedQuantitativeData.volumeRatio.toFixed(1)}倍</div>
-                </div>
-              </>
-            )}
-            {stock.matchedQuantitativeData.gapSize && (
-              <>
-                <div className="bg-white rounded p-2 border border-green-200">
-                  <div className="text-xs text-gray-600">缺口大小</div>
-                  <div className="text-lg font-bold text-cyan-600">{stock.matchedQuantitativeData.gapSize}%</div>
-                </div>
-                <div className="bg-white rounded p-2 border border-green-200">
-                  <div className="text-xs text-gray-600">放量倍数</div>
-                  <div className="text-lg font-bold text-green-600">{stock.matchedQuantitativeData.volumeRatio.toFixed(1)}倍</div>
-                </div>
-                <div className="bg-white rounded p-2 border border-green-200">
-                  <div className="text-xs text-gray-600">缺口后天数</div>
-                  <div className="text-lg font-bold text-purple-600">{stock.matchedQuantitativeData.daysAfterGap}天</div>
-                </div>
-              </>
-            )}
+        {/* 量化匹配指标 - 仅在有数据时显示 */}
+        {stock.matchedQuantitativeData && (
+          <div className="mb-6 bg-green-50 rounded-lg p-4 border-2 border-green-300">
+            <h4 className="font-semibold text-green-800 mb-3 flex items-center gap-2">
+              <span>📊</span> 量化匹配指标
+            </h4>
+            <div className="grid grid-cols-3 gap-3">
+              {stock.matchedQuantitativeData.consolidationDays && (
+                <>
+                  <div className="bg-white rounded p-2 border border-green-200">
+                    <div className="text-xs text-gray-600">回调天数</div>
+                    <div className="text-lg font-bold text-purple-600">{stock.matchedQuantitativeData.consolidationDays}天</div>
+                  </div>
+                  <div className="bg-white rounded p-2 border border-green-200">
+                    <div className="text-xs text-gray-600">回调期成交量</div>
+                    <div className="text-lg font-bold text-blue-600">{stock.matchedQuantitativeData.avgVolumeDuring.toLocaleString()}</div>
+                    <div className="text-xs text-red-600">↓ 前期{(stock.matchedQuantitativeData.avgVolumeDuring / stock.matchedQuantitativeData.avgVolumeBefore * 100).toFixed(0)}%</div>
+                  </div>
+                  <div className="bg-white rounded p-2 border border-green-200">
+                    <div className="text-xs text-gray-600">突破放量比</div>
+                    <div className="text-lg font-bold text-green-600">{stock.matchedQuantitativeData.volumeRatio.toFixed(1)}倍</div>
+                  </div>
+                </>
+              )}
+              {stock.matchedQuantitativeData.gapSize && (
+                <>
+                  <div className="bg-white rounded p-2 border border-green-200">
+                    <div className="text-xs text-gray-600">缺口大小</div>
+                    <div className="text-lg font-bold text-cyan-600">{stock.matchedQuantitativeData.gapSize}%</div>
+                  </div>
+                  <div className="bg-white rounded p-2 border border-green-200">
+                    <div className="text-xs text-gray-600">放量倍数</div>
+                    <div className="text-lg font-bold text-green-600">{stock.matchedQuantitativeData.volumeRatio.toFixed(1)}倍</div>
+                  </div>
+                  <div className="bg-white rounded p-2 border border-green-200">
+                    <div className="text-xs text-gray-600">缺口后天数</div>
+                    <div className="text-lg font-bold text-purple-600">{stock.matchedQuantitativeData.daysAfterGap}天</div>
+                  </div>
+                </>
+              )}
+            </div>
           </div>
-        </div>
+        )}
 
         {/* 分析理由 */}
         <div className="mb-6 bg-amber-50 rounded-lg p-4 border border-amber-200">
@@ -1549,7 +1551,7 @@ function StockDetailCard({ stock }: { stock: any }) {
                 <KLineChart
                   data={stock.klineData}
                   patternId={stock.rank}
-                  quantData={stock.matchedQuantitativeData}
+                  quantData={stock.matchedQuantitativeData || undefined}
                 />
               </div>
 
@@ -1559,7 +1561,7 @@ function StockDetailCard({ stock }: { stock: any }) {
                 <VolumeChart
                   data={stock.klineData}
                   patternId={stock.rank}
-                  quantData={stock.matchedQuantitativeData}
+                  quantData={stock.matchedQuantitativeData || undefined}
                 />
               </div>
             </ChartScrollContainer>
