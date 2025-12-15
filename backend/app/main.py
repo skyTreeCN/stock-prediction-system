@@ -2,6 +2,7 @@ from fastapi import FastAPI, HTTPException, BackgroundTasks
 from fastapi.middleware.cors import CORSMiddleware
 from dotenv import load_dotenv
 import os
+import logging
 from typing import List
 
 from .database import StockDatabase
@@ -21,6 +22,24 @@ from .models import (
     TrainingRequest
 )
 from .routers import pattern_training
+
+# 配置日志
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+    handlers=[
+        logging.StreamHandler(),  # 输出到控制台
+        logging.FileHandler('logs/app.log', encoding='utf-8') if os.path.exists('logs') or os.makedirs('logs', exist_ok=True) else logging.StreamHandler()
+    ]
+)
+
+# 设置不同模块的日志级别
+logging.getLogger('uvicorn').setLevel(logging.WARNING)
+logging.getLogger('httpx').setLevel(logging.WARNING)
+logging.getLogger('anthropic').setLevel(logging.INFO)
+
+logger = logging.getLogger(__name__)
+logger.info("股票预测系统API启动中...")
 
 # 加载环境变量
 load_dotenv(os.path.join(os.path.dirname(__file__), '..', '.env'))
@@ -245,11 +264,15 @@ async def analyze_patterns(request: AnalyzeRequest, background_tasks: Background
     区域2：分析上涨模式
     使用 Claude AI 分析历史数据，提取上涨模式
     """
+    logger.info(f"收到模式分析请求: pattern_count={request.pattern_count}")
+
     if task_status["analyze"]["running"]:
+        logger.warning("分析任务正在运行中，拒绝新请求")
         return {"success": False, "message": "分析任务正在运行中"}
 
     def analyze_task(pattern_count: int):
         try:
+            logger.info(f"开始分析任务: pattern_count={pattern_count}")
             task_status["analyze"]["running"] = True
             task_status["analyze"]["message"] = "获取历史上涨样本..."
             task_status["analyze"]["progress"] = 20
@@ -301,8 +324,10 @@ async def analyze_patterns(request: AnalyzeRequest, background_tasks: Background
 
             task_status["analyze"]["message"] = f"成功！识别出{len(patterns)}种模式（已验证）"
             task_status["analyze"]["progress"] = 100
+            logger.info(f"分析任务完成: 识别出{len(patterns)}种模式")
 
         except Exception as e:
+            logger.error(f"分析任务失败: {str(e)}", exc_info=True)
             task_status["analyze"]["message"] = f"错误: {str(e)}"
         finally:
             task_status["analyze"]["running"] = False
