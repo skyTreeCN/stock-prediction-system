@@ -13,6 +13,17 @@ class StockData(BaseModel):
     low: float  # 最低价
     volume: float  # 成交量
 
+class QuantitativeData(BaseModel):
+    """量化匹配度数据"""
+    consolidation_days: Optional[int] = 0  # 横盘整理天数
+    avg_volume_before: Optional[float] = 0  # 前期平均成交量
+    avg_volume_during: Optional[float] = 0  # 整理期平均成交量
+    volume_ratio: Optional[float] = 0  # 近5日成交量/30日均量
+    gap_size: Optional[float] = 0  # 缺口大小(%)
+    days_after_gap: Optional[int] = 0  # 距离缺口天数
+    amplitude: Optional[float] = 0  # 30日振幅(%)
+    recent_5_days_avg_volume: Optional[float] = 0  # 近5日平均成交量
+
 class StockPrediction(BaseModel):
     """股票预测结果模型"""
     code: str
@@ -21,6 +32,7 @@ class StockPrediction(BaseModel):
     reason: str  # 原因说明
     current_price: float  # 当前价格
     last_date: str  # 数据最后日期
+    matched_quantitative_data: Optional[QuantitativeData] = None  # 量化匹配度
 
 class PatternAnnotationRegion(BaseModel):
     """区域标注（用于横盘期、上涨期等）"""

@@ -42,13 +42,19 @@
         <li>多数据源适配（Yahoo/AkShare/Tushare/Baostock/模拟），数据库表、索引和预测历史表已存在。</li>
       </ul>
     </div>
-    <div class="box warn">
-      <strong>主要短板（最新代码扫描核验）：</strong>
+    <div class="box ok">
+      <strong>阻断级问题状态：</strong>
       <ul>
-        <li>AI 链路已修复：全局 <code>analyzer</code> 已初始化（main.py:97），无 API Key 时优雅降级，<code>self.db</code> 已注入且预测调用 <code>save_prediction</code>，Claude 调用已有重试/超时/退避。</li>
-        <li><strong>前后端契约待补齐</strong>：后端预测结果仅返回基础字段（code/name/probability/reasoning），前端对 <code>matchedQuantitativeData</code> 等仍为 mock/条件渲染，真实数据下仅能展示基础信息。</li>
-        <li><strong>预测读取路径</strong>：<code>/api/predictions</code> 仍返回内存中的结果；如需进程重启后可读，建议支持从 DB 读取最近一次预测或明确引导使用 <code>/api/predictions/history</code>。</li>
-        <li>健壮性/配置：重试/退避已存在；CORS 已可环境变量配置；建议继续确认异常路径是否更新任务状态、前端提示是否友好。</li>
+        <li>全局 <code>analyzer</code> 已初始化并注入 DB；无 API Key 时降级不崩溃；Claude 调用有重试/超时/退避；预测调用 <code>save_prediction</code> 写库。</li>
+        <li>数据链路（股票池→抓取→训练→预测→展示）可跑通，日志/CORS 配置可通过环境变量控制。</li>
+      </ul>
+    </div>
+    <div class="box warn">
+      <strong>当前需关注的细节：</strong>
+      <ul>
+        <li><strong>预测读取方式</strong>：<code>/api/predictions</code> 仍返回内存结果；重启后建议默认从 DB 读取最近一次结果，或在前端/文档明确使用 <code>/api/predictions/history</code>。</li>
+        <li><strong>前后端契约</strong>：后端预测结果仅基础字段（code/name/probability/reasoning），前端对 <code>matchedQuantitativeData</code> 等仍是 mock/条件渲染，真实数据仅展示基础信息；如需量化指标需后端补充输出。</li>
+        <li>异常提示：重试/退避已在代码中，建议继续确认任务失败时 <code>task_status</code> 与前端提示是否完整。</li>
       </ul>
     </div>
   </section>
@@ -56,8 +62,8 @@
   <section>
     <h2>2. 关键问题清单（需优先修复）</h2>
     <ol>
-      <li><span class="tag tag-amber">契约</span> 如需展示量化匹配度/模式特征，后端需补充相关字段并前端渲染；否则前端仅展示基础概率/理由。</li>
-      <li><span class="tag tag-amber">预测读取</span> 让 <code>/api/predictions</code> 支持从 DB 读取最近一次结果，或在文档/前端明确引导使用 <code>/api/predictions/history</code>。</li>
+      <li><span class="tag tag-amber">契约</span> 若需展示量化匹配度/模式特征，后端补充相应字段并前端渲染；否则前端仅展示基础概率/理由。</li>
+      <li><span class="tag tag-amber">预测读取</span> 建议 <code>/api/predictions</code> 支持从 DB 回读最近一次结果，或在文档/前端明确使用 <code>/api/predictions/history</code>。</li>
       <li><span class="tag tag-amber">异常提示</span> 确认任务失败时 <code>task_status</code> 更新与前端提示完整，避免静默失败。</li>
     </ol>
   </section>

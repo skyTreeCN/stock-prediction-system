@@ -383,7 +383,7 @@ class StockAnalyzer:
 
             predictions = json.loads(response_text.strip())
 
-            # 合并元数据到预测结果
+            # 合并元数据和量化指标到预测结果
             for pred in predictions:
                 code = pred.get('code')
                 if code in stock_metadata:
@@ -392,6 +392,11 @@ class StockAnalyzer:
                     # 确保name一致
                     if 'name' not in pred or not pred['name']:
                         pred['name'] = stock_metadata[code]['name']
+
+                    # 计算量化匹配度特征
+                    if code in batch_data:
+                        quant_data = self._calculate_quantitative_features(batch_data[code])
+                        pred['matched_quantitative_data'] = quant_data
 
             return predictions
 
@@ -692,3 +697,74 @@ class StockAnalyzer:
             output_cost = (self.total_output_tokens / 1_000_000) * 75
         
         return round(input_cost + output_cost, 4)
+
+    def _calculate_quantitative_features(self, df: pd.DataFrame) -> dict:
+        """计算股票的量化特征
+
+        分析最近30天的K线数据，提取量化指标用于前端展示
+
+        Args:
+            df: 股票K线数据（已按日期排序）
+
+        Returns:
+            量化特征字典
+        """
+        df_sorted = df.sort_values('date')
+        recent = df_sorted.tail(30)  # 最近30天
+
+        if len(recent) < 5:
+            return {}
+
+        # 计算成交量相关指标
+        volumes = recent['volume'].values
+        avg_volume = float(volumes.mean())
+        recent_5_avg = float(volumes[-5:].mean())
+        volume_ratio = recent_5_avg / avg_volume if avg_volume > 0 else 1.0
+
+        # 计算价格波动指标
+        closes = recent['close'].values
+        highs = recent['high'].values
+        lows = recent['low'].values
+
+        # 振幅：(最高-最低)/最低
+        amplitude = float(((highs.max() - lows.min()) / lows.min() * 100))
+
+        # 检测横盘整理期（连续N天波动<3%）
+        consolidation_days = 0
+        for i in range(len(closes) - 1, 0, -1):
+            daily_change = abs((closes[i] - closes[i-1]) / closes[i-1])
+            if daily_change < 0.03:
+                consolidation_days += 1
+            else:
+                break
+
+        # 检测缺口（今日最低 > 昨日最高）
+        gap_size = 0.0
+        gap_days_ago = 0
+        for i in range(len(recent) - 1, 0, -1):
+            if lows[i] > highs[i-1]:
+                gap_size = float(((lows[i] - highs[i-1]) / highs[i-1] * 100))
+                gap_days_ago = len(recent) - 1 - i
+                break
+
+        # 计算前期和当前平均成交量（用于缩量整理判断）
+        if len(volumes) >= 15:
+            avg_volume_before = float(volumes[:15].mean())
+            avg_volume_during = float(volumes[15:].mean())
+        else:
+            avg_volume_before = avg_volume
+            avg_volume_during = avg_volume
+
+        # 返回量化特征（使用驼峰命名匹配前端）
+        quant_features = {
+            'consolidationDays': consolidation_days if consolidation_days >= 3 else 0,
+            'avgVolumeBefore': round(avg_volume_before, 2),
+            'avgVolumeDuring': round(avg_volume_during, 2),
+            'volumeRatio': round(volume_ratio, 2),
+            'gapSize': round(gap_size, 2) if gap_size > 0 else 0,
+            'daysAfterGap': gap_days_ago if gap_size > 0 else 0,
+            'amplitude': round(amplitude, 2),
+            'recent5DaysAvgVolume': round(recent_5_avg, 2)
+        }
+
+        return quant_features
