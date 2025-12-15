@@ -302,14 +302,17 @@ class AkShareDataFetcher:
 
 
 def fetch_sse_component_stocks():
-    """获取上交所成分股列表（SSE 50, SSE 180, SSE 380等）
+    """获取沪深两市成分股列表（上交所 + 深交所指数成分股）
 
     Returns:
         股票列表 [{'code': '600000', 'name': '浦发银行', 'index_name': 'SSE50'}, ...]
     """
     try:
-        print('\n📊 开始获取上交所成分股...')
+        print('\n📊 开始获取沪深两市成分股...')
         all_stocks = []
+
+        # ========== 上交所成分股 ==========
+        print('\n🔵 上交所成分股：')
 
         # 获取上证50成分股
         try:
@@ -364,28 +367,89 @@ def fetch_sse_component_stocks():
         except Exception as e:
             print(f'    ✗ 获取上证380失败: {e}')
 
+        # ========== 深交所成分股 ==========
+        print('\n🟢 深交所成分股：')
+
+        # 获取深证成指成分股 (399001)
+        try:
+            print('  获取深证成指成分股...')
+            df_szse = ak.index_stock_cons(symbol="399001")  # 深证成指
+            if df_szse is not None and not df_szse.empty:
+                for _, row in df_szse.iterrows():
+                    code = row['品种代码']
+                    if not any(s['code'] == code for s in all_stocks):
+                        all_stocks.append({
+                            'code': code,
+                            'name': row['品种名称'],
+                            'index_name': 'SZSE_Component'
+                        })
+                print(f'    ✓ 深证成指: {len(df_szse)} 只')
+            time.sleep(1)
+        except Exception as e:
+            print(f'    ✗ 获取深证成指失败: {e}')
+
+        # 获取深证100成分股 (399330)
+        try:
+            print('  获取深证100成分股...')
+            df_sz100 = ak.index_stock_cons(symbol="399330")  # 深证100
+            if df_sz100 is not None and not df_sz100.empty:
+                for _, row in df_sz100.iterrows():
+                    code = row['品种代码']
+                    if not any(s['code'] == code for s in all_stocks):
+                        all_stocks.append({
+                            'code': code,
+                            'name': row['品种名称'],
+                            'index_name': 'SZSE100'
+                        })
+                print(f'    ✓ 深证100: {len(df_sz100)} 只')
+            time.sleep(1)
+        except Exception as e:
+            print(f'    ✗ 获取深证100失败: {e}')
+
+        # 获取创业板指成分股 (399006)
+        try:
+            print('  获取创业板指成分股...')
+            df_cyb = ak.index_stock_cons(symbol="399006")  # 创业板指
+            if df_cyb is not None and not df_cyb.empty:
+                for _, row in df_cyb.iterrows():
+                    code = row['品种代码']
+                    if not any(s['code'] == code for s in all_stocks):
+                        all_stocks.append({
+                            'code': code,
+                            'name': row['品种名称'],
+                            'index_name': 'ChiNext'
+                        })
+                print(f'    ✓ 创业板指: {len(df_cyb)} 只')
+            time.sleep(1)
+        except Exception as e:
+            print(f'    ✗ 获取创业板指失败: {e}')
+
         # 如果以上都失败，使用备选方案：沪深300
         if len(all_stocks) == 0:
             try:
-                print('  备选方案：获取沪深300成分股...')
+                print('\n  ⚠️ 备选方案：获取沪深300成分股...')
                 df_hs300 = ak.index_stock_cons(symbol="000300")  # 沪深300
                 if df_hs300 is not None and not df_hs300.empty:
                     for _, row in df_hs300.iterrows():
                         code = row['品种代码']
-                        # 只取上海的股票（6开头）
-                        if code.startswith('6'):
-                            all_stocks.append({
-                                'code': code,
-                                'name': row['品种名称'],
-                                'index_name': 'HS300'
-                            })
-                    print(f'    ✓ 沪深300（上海）: {len(all_stocks)} 只')
+                        all_stocks.append({
+                            'code': code,
+                            'name': row['品种名称'],
+                            'index_name': 'HS300'
+                        })
+                    print(f'    ✓ 沪深300: {len(all_stocks)} 只')
             except Exception as e:
                 print(f'    ✗ 获取沪深300失败: {e}')
 
-        print(f'\n✅ 成功获取 {len(all_stocks)} 只上交所成分股')
+        # 统计不同市场的股票数量
+        sse_count = len([s for s in all_stocks if s['code'].startswith('6')])
+        szse_count = len([s for s in all_stocks if s['code'].startswith(('0', '3'))])
+
+        print(f'\n✅ 成功获取 {len(all_stocks)} 只成分股')
+        print(f'   - 上交所 (6xxxxx): {sse_count} 只')
+        print(f'   - 深交所 (0xxxxx/3xxxxx): {szse_count} 只')
         return all_stocks
 
     except Exception as e:
-        print(f'❌ 获取上交所成分股失败: {e}')
+        print(f'❌ 获取成分股失败: {e}')
         return []
