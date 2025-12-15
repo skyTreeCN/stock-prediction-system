@@ -209,6 +209,36 @@ async def get_task_status(task_name: str):
     }
 
 
+@app.get("/api/claude-api-statistics")
+async def get_claude_api_statistics():
+    """获取Claude API调用统计和成本信息"""
+    try:
+        # 从全局analyzer获取统计（如果存在）
+        if 'analyzer' in globals() and analyzer is not None:
+            stats = analyzer.get_api_statistics()
+            return {
+                "success": True,
+                "data": stats,
+                "message": "API统计信息"
+            }
+        else:
+            return {
+                "success": False,
+                "message": "分析器未初始化",
+                "data": {
+                    'total_calls': 0,
+                    'total_errors': 0,
+                    'success_rate': 0,
+                    'input_tokens': 0,
+                    'output_tokens': 0,
+                    'total_tokens': 0,
+                    'estimated_cost_usd': 0.0
+                }
+            }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"获取统计失败: {str(e)}")
+
+
 @app.post("/api/analyze")
 async def analyze_patterns(request: AnalyzeRequest, background_tasks: BackgroundTasks):
     """
