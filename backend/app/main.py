@@ -83,14 +83,18 @@ if not default_db_path:
 
 db = StockDatabase(default_db_path)
 
-# 验证 API Key
+# 验证 API Key 并初始化 Analyzer（允许无密钥启动）
 api_key = os.getenv("ANTHROPIC_API_KEY")
 if api_key:
-    print(f"[OK] API Key loaded: {api_key[:20]}...")
+    logger.info(f"✅ API Key已加载: {api_key[:20]}...")
+    logger.info("   AI功能已启用")
 else:
-    print("[WARNING] ANTHROPIC_API_KEY not set!")
+    logger.warning("⚠️  未设置ANTHROPIC_API_KEY环境变量")
+    logger.warning("   系统将以基础模式运行，AI相关功能将不可用")
+    logger.warning("   基础功能（数据抓取、股票池更新、统计）仍可正常使用")
 
-analyzer = StockAnalyzer(api_key=api_key)
+# 注入数据库依赖，允许无API Key启动
+analyzer = StockAnalyzer(api_key=api_key, db=db)
 
 # 全局状态
 task_status = {
@@ -277,6 +281,14 @@ async def analyze_patterns(request: AnalyzeRequest, background_tasks: Background
     """
     logger.info(f"收到模式分析请求: pattern_count={request.pattern_count}")
 
+    # 检查AI是否可用
+    if not analyzer.ai_enabled:
+        logger.error("AI功能不可用：未配置ANTHROPIC_API_KEY")
+        return {
+            "success": False,
+            "message": "AI功能不可用：请配置ANTHROPIC_API_KEY环境变量后重启服务"
+        }
+
     if task_status["analyze"]["running"]:
         logger.warning("分析任务正在运行中，拒绝新请求")
         return {"success": False, "message": "分析任务正在运行中"}
@@ -367,6 +379,14 @@ async def predict_stocks(background_tasks: BackgroundTasks):
     区域3：预测股票上涨概率
     根据最近数据和已识别模式进行预测
     """
+    # 检查AI是否可用
+    if not analyzer.ai_enabled:
+        logger.error("AI功能不可用：未配置ANTHROPIC_API_KEY")
+        return {
+            "success": False,
+            "message": "AI功能不可用：请配置ANTHROPIC_API_KEY环境变量后重启服务"
+        }
+
     if task_status["predict"]["running"]:
         return {"success": False, "message": "预测任务正在运行中"}
 

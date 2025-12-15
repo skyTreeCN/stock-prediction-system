@@ -35,20 +35,20 @@
   <section>
     <h2>1. 总体评价</h2>
     <div class="box ok">
-      <strong>亮点：</strong>
+      <strong>亮点（结合本次自报改进 + 代码现状）：</strong>
       <ul>
-        <li>端到端链路齐全：股票池更新 → 数据抓取（支持增量）→ 模式提取/验证 → 概率预测 → 前端展示/PDF 导出。</li>
-        <li>多数据源适配（Yahoo/AkShare/Tushare/Baostock/模拟），数据库表、索引和预测历史表均已建好。</li>
-        <li>有模式训练路由（pattern_training）和经典模式文件，前后端界面较丰富，包含 K 线/量柱与推荐卡片。</li>
+        <li>已补充深市覆盖与股票池扩展（自报）；回测指标体系与日志/CORS/成本统计等中优先级项已声明完成。</li>
+        <li>数据链路完整：股票池更新 → 数据抓取（含增量）→ 模式训练/验证 → 概率预测 → 前端展示/PDF。</li>
+        <li>多数据源适配（Yahoo/AkShare/Tushare/Baostock/模拟），数据库表、索引和预测历史表已存在。</li>
       </ul>
     </div>
     <div class="box warn">
-      <strong>主要短板（新扫描发现）：</strong>
+      <strong>主要短板（最新代码扫描仍存在）：</strong>
       <ul>
-        <li>启动硬依赖 Claude 密钥：<code>StockAnalyzer</code> 在未提供 <code>ANTHROPIC_API_KEY</code> 时直接抛错，导致整个 FastAPI 无法启动，连非 AI 接口也不可用。</li>
-        <li>预测存储路径断裂：<code>predict_stock_probability</code> 中调用 <code>self.db.save_prediction</code>，但 <code>self.db</code> 未定义，预测任务会 500；同时 <code>/api/predict</code> 只把结果放内存，不落库，历史/验证接口永远空。</li>
-        <li>前后端数据模型脱节：前端大量使用模拟字段（如 <code>matchedQuantitativeData</code>、示例 K 线），实际后端并不会返回，真实数据会回落到 mock 或渲染异常。</li>
-        <li>健壮性与合规：API 无速率/超时/退避控制；CORS 仅放行 localhost；缺少错误处理和日志分级，生产可观测性薄弱。</li>
+        <li><strong>启动阻断</strong>：<code>StockAnalyzer</code> 仍在缺少 <code>ANTHROPIC_API_KEY</code> 时直接抛错，导致 FastAPI 无法启动，基础接口也不可用（backend/app/analyzer.py）。</li>
+        <li><strong>预测存储链路断裂</strong>：<code>predict_stock_probability</code> 调用 <code>self.db.save_prediction</code>，但 <code>self.db</code> 未定义；<code>/api/predict</code> 仍只写内存不落库，历史/验证接口无数据来源。</li>
+        <li><strong>前后端契约不一致</strong>：前端依赖大量 mock 字段（例如 <code>matchedQuantitativeData</code>、示例 K 线），后端实际未返回这些字段，真实数据下会回落到 mock 或展示异常。</li>
+        <li>健壮性与安全仍需落实：代码中未看到超时/重试/退避的实际实现；CORS 仅允许 localhost；敏感配置仍需确认通过环境变量加载并禁止入库。</li>
       </ul>
     </div>
   </section>
@@ -56,11 +56,11 @@
   <section>
     <h2>2. 关键问题清单（需优先修复）</h2>
     <ol>
-      <li><span class="tag tag-red">阻断</span> 后端初始化强依赖 Claude：调整为延迟创建或在缺少密钥时禁用 AI 路由但保留基础 API。</li>
-      <li><span class="tag tag-red">阻断</span> <code>StockAnalyzer</code> 未注入 DB：在构造时传入 <code>StockDatabase</code> 或移除保存调用，否则预测任务必报错。</li>
-      <li><span class="tag tag-red">功能缺失</span> 预测未落库：<code>/api/predict</code> 仅存内存，需调用 <code>save_prediction</code> 将前 100 结果写入 <code>predictions</code> 表，历史/验证 API 才有数据。</li>
-      <li><span class="tag tag-amber">体验</span> 前端数据契约不匹配：去掉或标注 mock 字段，按后端实际返回结构渲染，避免真实数据下异常。</li>
-      <li><span class="tag tag-amber">稳健性</span> 外部调用无超时/重试：Claude/API 数据源建议加超时、重试与失败降级，避免任务挂死。</li>
+      <li><span class="tag tag-red">阻断</span> 解耦密钥：无 <code>ANTHROPIC_API_KEY</code> 时不应抛错崩溃；改为延迟实例化或禁用 AI 路由但保留基础 API。</li>
+      <li><span class="tag tag-red">阻断</span> 注入 DB 并落库：<code>StockAnalyzer</code> 构造时传入 <code>StockDatabase</code>；预测任务将结果写入 <code>predictions</code> 表，再返回前 100。</li>
+      <li><span class="tag tag-amber">契约</span> 前端改为按实际字段渲染；mock 数据仅示例并明显标注，避免真实数据场景报错。</li>
+      <li><span class="tag tag-amber">稳健性</span> 为 Claude/数据源请求添加超时、重试、退避与失败降级，任务失败应可见且不中断服务。</li>
+      <li><span class="tag tag-amber">配置</span> CORS 列表可配置，默认含部署域；确保敏感配置只通过环境变量，避免硬编码/入库。</li>
     </ol>
   </section>
 
@@ -78,21 +78,21 @@
   <section>
     <h2>4. 中期改进路线</h2>
     <ul>
-      <li>数据与特征：扩大样本（含深市）与经典模式库；在预测结果中增加定量特征/匹配度供前端展示。</li>
-      <li>验证与回测：完善模式/预测的回测指标（胜率、期望收益、回撤），前端展示可信度标签。</li>
-      <li>成本与配额：Claude 调用加批量/截断策略，记录 token 成本与错误率；异常时自动切换低成本模型。</li>
-      <li>可观测性：统一日志格式、分级，输出到文件/集中系统；加任务执行耗时、API 调用统计与健康检查。</li>
-      <li>前端体验：提供真实/模拟切换，加载状态与错误提示更明确；PDF 导出支持基础字段即可。</li>
+      <li>数据与特征：在扩大样本/深市覆盖基础上，增加预测结果的定量特征与匹配度输出，便于前端展示可信度。</li>
+      <li>验证与回测：将胜率/期望收益/回撤等回测指标写入接口与前端标签，提升可解释性。</li>
+      <li>成本与配额：Claude 调用加入批量/截断策略，记录 token 成本与错误率，失败自动降级到低成本模型。</li>
+      <li>可观测性：统一日志分级与格式，输出到文件/集中系统；补充任务耗时、API 调用统计、健康检查。</li>
+      <li>前端体验：真实/模拟模式可切换，加载/错误态明确；PDF 导出聚焦后端实际字段。</li>
     </ul>
   </section>
 
   <section>
     <h2>5. 验证清单（修复后建议自测）</h2>
     <ul>
-      <li>无密钥时：基础健康检查、股票池、数据统计接口能正常工作；AI 路由返回明确提示而非崩溃。</li>
-      <li>预测任务：成功完成且返回 100 条以内结果，预测历史接口能读到刚写入的数据，验证接口可更新记录。</li>
-      <li>前端：在真实数据模式下无 mock 字段报错，列表/详情均能渲染；CORS 配置允许部署域访问。</li>
-      <li>异常路径：Claude 超时/限流时任务能失败可见且不阻塞后续请求；数据源网络失败有重试和降级日志。</li>
+      <li>无密钥：基础健康检查、股票池、统计接口可用；AI 路由提示缺密钥但不崩溃。</li>
+      <li>预测链路：任务完成、前 100 结果写入 <code>predictions</code> 表；历史/验证接口能读到刚写入记录。</li>
+      <li>前端：真实数据模式下无 mock 字段异常，列表/详情正常渲染；CORS 允许部署域访问。</li>
+      <li>异常路径：Claude 超时/限流或数据源失败有超时/重试/降级，任务失败可见且不阻塞后续请求。</li>
     </ul>
   </section>
 </div>

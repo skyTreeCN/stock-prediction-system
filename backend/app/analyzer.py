@@ -1,8 +1,9 @@
 from anthropic import Anthropic
 import pandas as pd
-from typing import List, Dict
+from typing import List, Dict, Optional
 import json
 import os
+import time
 from datetime import datetime
 from .config import get_model_id, get_active_model
 from .pattern_matcher import load_classic_patterns, match_classic_patterns, pre_screen_stocks
@@ -10,11 +11,29 @@ from .pattern_matcher import load_classic_patterns, match_classic_patterns, pre_
 class StockAnalyzer:
     """使用 Claude AI 进行股票分析"""
 
-    def __init__(self, api_key: str, model: str = None):
-        if not api_key:
-            raise ValueError("API Key不能为空,请设置ANTHROPIC_API_KEY环境变量")
+    def __init__(self, api_key: Optional[str] = None, model: Optional[str] = None, db=None):
+        """初始化StockAnalyzer
 
-        self.client = Anthropic(api_key=api_key)
+        Args:
+            api_key: Anthropic API密钥（可选，无密钥时仅支持非AI功能）
+            model: 模型ID（可选）
+            db: StockDatabase实例（可选，用于保存预测结果）
+        """
+        # 数据库依赖注入
+        self.db = db
+
+        # API密钥处理：无密钥时不崩溃，而是延迟初始化
+        self.api_key = api_key
+        self.client = None
+        self.ai_enabled = False
+
+        if api_key:
+            try:
+                self.client = Anthropic(api_key=api_key)
+                self.ai_enabled = True
+            except Exception as e:
+                print(f"⚠️  Claude API初始化失败: {e}")
+                print(f"   AI功能将不可用，但基础功能仍可正常运行")
 
         # API调用统计
         self.api_calls = 0
@@ -26,13 +45,85 @@ class StockAnalyzer:
         if model is None:
             self.model = get_model_id()
             model_config = get_active_model()
-            print(f"✅ 初始化 StockAnalyzer")
-            print(f"   模型: {model_config['name']} ({self.model})")
-            print(f"   预期准确率: {model_config.get('accuracy_5p', 'N/A')}% (5种模式)")
-            print(f"   适用场景: {model_config['use_case']}")
+            if self.ai_enabled:
+                print(f"✅ 初始化 StockAnalyzer (AI模式)")
+                print(f"   模型: {model_config['name']} ({self.model})")
+                print(f"   预期准确率: {model_config.get('accuracy_5p', 'N/A')}% (5种模式)")
+                print(f"   适用场景: {model_config['use_case']}")
+            else:
+                print(f"⚠️  初始化 StockAnalyzer (无AI模式)")
+                print(f"   仅支持基础数据处理功能")
         else:
             self.model = model
-            print(f"⚠️  使用自定义模型: {self.model}")
+            if self.ai_enabled:
+                print(f"⚠️  使用自定义模型: {self.model}")
+
+    def _check_ai_available(self) -> bool:
+        """检查AI功能是否可用"""
+        if not self.ai_enabled or not self.client:
+            print("❌ AI功能不可用：未配置ANTHROPIC_API_KEY")
+            return False
+        return True
+
+    def _call_claude_with_retry(
+        self,
+        prompt: str,
+        max_tokens: int = 4096,
+        max_retries: int = 3,
+        timeout: int = 60
+    ) -> Optional[str]:
+        """带重试和超时机制的Claude API调用
+
+        Args:
+            prompt: 提示词
+            max_tokens: 最大token数
+            max_retries: 最大重试次数
+            timeout: 超时时间（秒）
+
+        Returns:
+            API响应文本，失败返回None
+        """
+        for attempt in range(max_retries):
+            try:
+                print(f"   Claude API调用 (尝试 {attempt + 1}/{max_retries})...")
+
+                message = self.client.messages.create(
+                    model=self.model,
+                    max_tokens=max_tokens,
+                    timeout=timeout,  # 设置超时
+                    messages=[{"role": "user", "content": prompt}]
+                )
+
+                # 更新API统计
+                self.api_calls += 1
+                self.total_input_tokens += message.usage.input_tokens
+                self.total_output_tokens += message.usage.output_tokens
+
+                response_text = message.content[0].text
+                print(f"   ✅ API调用成功 (输入:{message.usage.input_tokens} 输出:{message.usage.output_tokens})")
+                return response_text
+
+            except Exception as e:
+                self.api_errors += 1
+                error_msg = str(e)
+
+                # 检查是否是限流错误
+                is_rate_limit = "rate_limit" in error_msg.lower() or "429" in error_msg
+
+                if attempt < max_retries - 1:
+                    # 指数退避：2^attempt 秒，限流错误等待更久
+                    wait_time = (2 ** attempt) * (5 if is_rate_limit else 1)
+                    print(f"   ⚠️  API调用失败: {error_msg}")
+                    print(f"   等待 {wait_time} 秒后重试...")
+                    time.sleep(wait_time)
+                else:
+                    print(f"   ❌ API调用最终失败: {error_msg}")
+                    print(f"   错误类型: {type(e).__name__}")
+                    if hasattr(e, 'response'):
+                        print(f"   响应: {e.response}")
+                    return None
+
+        return None
 
     def analyze_rising_patterns(self, sample_data: pd.DataFrame) -> List[Dict]:
         """分析上涨模式
@@ -43,6 +134,10 @@ class StockAnalyzer:
         Returns:
             List of pattern dictionaries
         """
+        # 检查AI是否可用
+        if not self._check_ai_available():
+            return []
+
         # 准备数据摘要
         data_summary = self._prepare_data_summary(sample_data)
 
@@ -84,21 +179,14 @@ class StockAnalyzer:
 - highlight_description要具体，便于在K线图上可视化
 - 只返回JSON数组，不要其他文字"""
 
+        # 使用带重试的API调用
+        response_text = self._call_claude_with_retry(prompt, max_tokens=4096)
+
+        if not response_text:
+            print("❌ Claude API调用失败，无法分析模式")
+            return []
+
         try:
-            message = self.client.messages.create(
-                model=self.model,
-                max_tokens=4096,
-                messages=[
-                    {"role": "user", "content": prompt}
-                ]
-            )
-
-            # 更新API统计
-            self.api_calls += 1
-            self.total_input_tokens += message.usage.input_tokens
-            self.total_output_tokens += message.usage.output_tokens
-
-            response_text = message.content[0].text
             print(f"[DEBUG] Claude 响应: {response_text[:200]}...")
 
             # 清理 markdown 代码块标记
@@ -111,12 +199,9 @@ class StockAnalyzer:
             patterns = json.loads(response_text)
             return patterns
 
-        except Exception as e:
-            self.api_errors += 1
-            print(f"Claude 分析失败: {e}")
-            print(f"[DEBUG] 错误类型: {type(e).__name__}")
-            if hasattr(e, 'response'):
-                print(f"[DEBUG] Response: {e.response}")
+        except json.JSONDecodeError as e:
+            print(f"❌ JSON解析失败: {e}")
+            print(f"   响应内容: {response_text[:500]}")
             return []
 
     def predict_stock_probability(
@@ -191,27 +276,33 @@ class StockAnalyzer:
         # 按概率排序
         all_predictions.sort(key=lambda x: x['probability'], reverse=True)
 
-        # 保存预测结果到数据库
-        from datetime import datetime
-        prediction_date = datetime.now().strftime('%Y-%m-%d')
+        # 保存预测结果到数据库（如果有DB依赖）
+        if self.db:
+            from datetime import datetime
+            prediction_date = datetime.now().strftime('%Y-%m-%d')
 
-        for pred in all_predictions[:100]:
-            try:
-                self.db.save_prediction({
-                    'stock_code': pred['code'],
-                    'stock_name': pred.get('name', ''),
-                    'prediction_date': prediction_date,
-                    'matched_patterns': pred.get('matched_patterns', []),
-                    'probability': pred['probability'],
-                    'reasoning': pred.get('reasoning', '')
-                })
-            except Exception as e:
-                print(f"保存预测结果失败 {pred['code']}: {e}")
+            for pred in all_predictions[:100]:
+                try:
+                    self.db.save_prediction({
+                        'stock_code': pred['code'],
+                        'stock_name': pred.get('name', ''),
+                        'prediction_date': prediction_date,
+                        'matched_patterns': pred.get('matched_patterns', []),
+                        'probability': pred['probability'],
+                        'reasoning': pred.get('reasoning', '')
+                    })
+                except Exception as e:
+                    print(f"保存预测结果失败 {pred['code']}: {e}")
+        else:
+            print("⚠️  未配置数据库，预测结果仅保存在内存中")
 
         return all_predictions[:100]  # 返回前100个
 
     def _predict_batch(self, batch_data: Dict[str, pd.DataFrame], patterns: List[Dict]) -> List[Dict]:
         """预测一批股票"""
+        # 检查AI是否可用
+        if not self._check_ai_available():
+            return []
 
         # 准备批量数据摘要和元数据字典
         batch_summary = []
@@ -276,17 +367,14 @@ class StockAnalyzer:
 - reason 简短说明（不超过50字）
 - 只返回JSON数组，不要其他文字"""
 
+        # 使用带重试的API调用
+        response_text = self._call_claude_with_retry(prompt, max_tokens=4096)
+
+        if not response_text:
+            print("❌ Claude API调用失败，跳过该批次")
+            return []
+
         try:
-            message = self.client.messages.create(
-                model=self.model,
-                max_tokens=4096,
-                messages=[
-                    {"role": "user", "content": prompt}
-                ]
-            )
-
-            response_text = message.content[0].text
-
             # 提取JSON（可能有markdown代码块）
             if "```json" in response_text:
                 response_text = response_text.split("```json")[1].split("```")[0]
@@ -307,8 +395,9 @@ class StockAnalyzer:
 
             return predictions
 
-        except Exception as e:
-            print(f"预测批次失败: {e}")
+        except json.JSONDecodeError as e:
+            print(f"❌ JSON解析失败: {e}")
+            print(f"   响应内容: {response_text[:500]}")
             return []
 
     def validate_patterns_sql(
@@ -370,6 +459,11 @@ class StockAnalyzer:
         Returns:
             更新后的模式列表，包含validated_success_rate字段
         """
+        # 检查AI是否可用
+        if not self._check_ai_available():
+            print("⚠️  AI不可用，降级到SQL验证方法")
+            return self.validate_patterns_sql(patterns, validation_data, rise_threshold)
+
         print(f"\n📊 开始验证模式（AI方法）")
         print(f"   验证样本数: {len(validation_data)}")
 
@@ -403,17 +497,17 @@ class StockAnalyzer:
 
 只返回JSON，不要其他文字。"""
 
+            # 使用带重试的API调用
+            response_text = self._call_claude_with_retry(prompt, max_tokens=500, timeout=30)
+
+            if not response_text:
+                print(f"   ✗ {pattern_name} API调用失败，设置为0")
+                pattern['validated_success_rate'] = 0
+                pattern['validation_sample_count'] = 0
+                pattern['validation_date'] = datetime.now().strftime('%Y-%m-%d')
+                continue
+
             try:
-                message = self.client.messages.create(
-                    model=self.model,
-                    max_tokens=500,
-                    messages=[
-                        {"role": "user", "content": prompt}
-                    ]
-                )
-
-                response_text = message.content[0].text
-
                 # 提取JSON
                 if "```json" in response_text:
                     response_text = response_text.split("```json")[1].split("```")[0]
@@ -428,9 +522,8 @@ class StockAnalyzer:
 
                 print(f"   ✓ {pattern_name}: {result['success_rate']:.1f}% ({result['matched_count']}/{result['total_count']})")
 
-            except Exception as e:
-                print(f"   ✗ {pattern_name} 验证失败: {e}")
-                # 降级到SQL方法
+            except (json.JSONDecodeError, KeyError) as e:
+                print(f"   ✗ {pattern_name} 解析失败: {e}")
                 pattern['validated_success_rate'] = 0
                 pattern['validation_sample_count'] = 0
                 pattern['validation_date'] = datetime.now().strftime('%Y-%m-%d')
