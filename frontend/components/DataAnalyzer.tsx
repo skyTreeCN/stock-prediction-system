@@ -6,6 +6,53 @@ import AnnotatedKLineChart from './AnnotatedKLineChart'
 
 const API_BASE = 'http://localhost:8000'
 
+// 空态组件
+const EmptyState = ({ icon, title, message, action }: {
+  icon: string
+  title: string
+  message: string
+  action?: { label: string, onClick: () => void }
+}) => (
+  <div className="bg-gray-50 rounded-lg p-8 border border-gray-200 text-center">
+    <div className="text-gray-400 text-4xl mb-2">{icon}</div>
+    <p className="text-gray-500 text-sm font-semibold">{title}</p>
+    <p className="text-gray-400 text-xs mt-1">{message}</p>
+    {action && (
+      <button
+        onClick={action.onClick}
+        className="mt-4 px-4 py-2 bg-blue-500 text-white text-xs rounded hover:bg-blue-600"
+      >
+        {action.label}
+      </button>
+    )}
+  </div>
+)
+
+// 加载中组件
+const LoadingState = ({ message }: { message: string }) => (
+  <div className="bg-blue-50 rounded-lg p-6 border border-blue-200 text-center">
+    <div className="animate-spin h-8 w-8 border-4 border-blue-500 border-t-transparent rounded-full mx-auto mb-3"></div>
+    <p className="text-blue-700 text-sm">{message}</p>
+  </div>
+)
+
+// 错误状态组件
+const ErrorState = ({ message, onRetry }: { message: string, onRetry?: () => void }) => (
+  <div className="bg-red-50 rounded-lg p-6 border border-red-200 text-center">
+    <div className="text-red-400 text-3xl mb-2">⚠️</div>
+    <p className="text-red-700 text-sm font-semibold">加载失败</p>
+    <p className="text-red-600 text-xs mt-1">{message}</p>
+    {onRetry && (
+      <button
+        onClick={onRetry}
+        className="mt-4 px-4 py-2 bg-red-500 text-white text-xs rounded hover:bg-red-600"
+      >
+        重试
+      </button>
+    )}
+  </div>
+)
+
 interface Pattern {
   pattern_name: string
   description: string
@@ -776,6 +823,19 @@ export default function DataAnalyzer() {
       <div className="mt-6 p-5 bg-gradient-to-r from-gray-50 to-gray-100 rounded-lg border border-gray-300">
         <h3 className="text-xl font-bold mb-4 text-gray-800">📚 完整模式库</h3>
 
+        {/* 空态：无任何模式 */}
+        {patterns.length === 0 && (!stepResults.patterns || !stepResults.patterns.data || !stepResults.patterns.data.patterns || stepResults.patterns.data.patterns.length === 0) && (
+          <EmptyState
+            icon="🔍"
+            title="模式库为空"
+            message="请先运行上方的分析流程来发现股票上涨模式"
+            action={{
+              label: "开始K线形态识别",
+              onClick: handleAnalysis
+            }}
+          />
+        )}
+
         {/* K线形态模式 */}
         {patterns.length > 0 && (
           <div className="mb-6 p-4 bg-white rounded-lg border border-green-300">
@@ -859,11 +919,11 @@ export default function DataAnalyzer() {
                           />
                         </div>
                       ) : (
-                        <div className="bg-gray-50 rounded-lg p-8 border border-gray-200 text-center">
-                          <div className="text-gray-400 text-4xl mb-2">📊</div>
-                          <p className="text-gray-500 text-sm">暂无K线数据</p>
-                          <p className="text-gray-400 text-xs mt-1">请先获取股票行情数据</p>
-                        </div>
+                        <EmptyState
+                          icon="📊"
+                          title="暂无K线数据"
+                          message="请先在Tab1获取股票行情数据"
+                        />
                       )}
                     </div>
                   </>
