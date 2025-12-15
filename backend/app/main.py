@@ -50,17 +50,28 @@ app = FastAPI(title="股票预测系统API")
 app.include_router(pattern_training.router)
 
 # 允许跨域请求（前端访问）
+# 从环境变量读取允许的源，默认仅localhost
+ALLOWED_ORIGINS = os.getenv(
+    "ALLOWED_ORIGINS",
+    "http://localhost:3000,http://localhost:3001,http://localhost:3002"
+).split(",")
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "http://localhost:3000",
-        "http://localhost:3001",
-        "http://localhost:3002"
-    ],  # Next.js 可能使用的端口
+    allow_origins=ALLOWED_ORIGINS,
     allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],  # 明确指定允许的方法
+    allow_headers=[
+        "Content-Type",
+        "Authorization",
+        "Accept",
+        "Origin",
+        "X-Requested-With"
+    ],  # 明确指定允许的headers
+    max_age=3600,  # 预检请求缓存1小时
 )
+
+logger.info(f"CORS配置: 允许的源 = {ALLOWED_ORIGINS}")
 
 # 初始化组件
 # 优先读取环境变量 DATABASE_PATH；若未设置，则定位到仓库根目录下的 data/stocks.db，避免工作目录差异导致读取空库
