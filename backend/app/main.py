@@ -219,7 +219,9 @@ async def fetch_data(request: FetchDataRequest, background_tasks: BackgroundTask
             task_status["fetch_data"]["progress"] = 100
 
         except Exception as e:
+            logger.error(f"数据获取任务失败: {str(e)}", exc_info=True)
             task_status["fetch_data"]["message"] = f"错误: {str(e)}"
+            task_status["fetch_data"]["progress"] = 0
         finally:
             task_status["fetch_data"]["running"] = False
 
@@ -426,7 +428,9 @@ async def predict_stocks(background_tasks: BackgroundTasks):
             task_status["predict"]["result"] = predictions
 
         except Exception as e:
+            logger.error(f"预测任务失败: {str(e)}", exc_info=True)
             task_status["predict"]["message"] = f"错误: {str(e)}"
+            task_status["predict"]["progress"] = 0
         finally:
             task_status["predict"]["running"] = False
 
@@ -439,12 +443,42 @@ async def predict_stocks(background_tasks: BackgroundTasks):
 
 
 @app.get("/api/predictions", response_model=List[StockPrediction])
-async def get_predictions():
-    """获取预测结果（前100个）"""
-    if "result" not in task_status["predict"]:
-        return []
+async def get_predictions(days: int = 1):
+    """获取预测结果
 
-    return task_status["predict"]["result"]
+    优先返回内存中的最新预测结果；若无，则从数据库读取最近N天的预测
+
+    Args:
+        days: 从数据库读取最近N天的预测（默认1天，即最近一次）
+    """
+    # 优先返回内存中的结果（刚完成的预测）
+    if "result" in task_status["predict"]:
+        logger.info("返回内存中的预测结果")
+        return task_status["predict"]["result"]
+
+    # 内存中无结果，从数据库读取最近一次预测
+    logger.info(f"内存中无预测结果，从数据库读取最近{days}天的预测")
+    try:
+        predictions_from_db = db.get_predictions(days=days, verified_only=False)
+
+        # 转换为StockPrediction格式
+        result = []
+        for pred in predictions_from_db:
+            result.append({
+                'code': pred['stock_code'],
+                'name': pred['stock_name'],
+                'probability': pred['probability'],
+                'reason': pred['reasoning'],
+                'current_price': 0.0,  # 历史预测无当前价格
+                'last_date': pred['prediction_date']
+            })
+
+        logger.info(f"从数据库读取到 {len(result)} 条预测记录")
+        return result[:100]  # 返回前100条
+
+    except Exception as e:
+        logger.error(f"从数据库读取预测失败: {e}")
+        return []
 
 
 @app.get("/api/stock/{code}/kline")
@@ -512,6 +546,7 @@ async def update_stock_pool(background_tasks: BackgroundTasks):
             task_status["update_pool"]["progress"] = 100
 
         except Exception as e:
+            logger.error(f"股票池更新任务失败: {str(e)}", exc_info=True)
             task_status["update_pool"]["message"] = f"错误: {str(e)}"
             task_status["update_pool"]["progress"] = 0
         finally:

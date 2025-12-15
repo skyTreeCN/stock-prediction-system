@@ -43,12 +43,12 @@
       </ul>
     </div>
     <div class="box warn">
-      <strong>主要短板（最新代码扫描仍存在）：</strong>
+      <strong>主要短板（最新代码扫描核验）：</strong>
       <ul>
-        <li><strong>启动阻断</strong>：<code>StockAnalyzer</code> 仍在缺少 <code>ANTHROPIC_API_KEY</code> 时直接抛错，导致 FastAPI 无法启动，基础接口也不可用（backend/app/analyzer.py）。</li>
-        <li><strong>预测存储链路断裂</strong>：<code>predict_stock_probability</code> 调用 <code>self.db.save_prediction</code>，但 <code>self.db</code> 未定义；<code>/api/predict</code> 仍只写内存不落库，历史/验证接口无数据来源。</li>
-        <li><strong>前后端契约不一致</strong>：前端依赖大量 mock 字段（例如 <code>matchedQuantitativeData</code>、示例 K 线），后端实际未返回这些字段，真实数据下会回落到 mock 或展示异常。</li>
-        <li>健壮性与安全仍需落实：代码中未看到超时/重试/退避的实际实现；CORS 仅允许 localhost；敏感配置仍需确认通过环境变量加载并禁止入库。</li>
+        <li>AI 链路已修复：全局 <code>analyzer</code> 已初始化（main.py:97），无 API Key 时优雅降级，<code>self.db</code> 已注入且预测调用 <code>save_prediction</code>，Claude 调用已有重试/超时/退避。</li>
+        <li><strong>前后端契约待补齐</strong>：后端预测结果仅返回基础字段（code/name/probability/reasoning），前端对 <code>matchedQuantitativeData</code> 等仍为 mock/条件渲染，真实数据下仅能展示基础信息。</li>
+        <li><strong>预测读取路径</strong>：<code>/api/predictions</code> 仍返回内存中的结果；如需进程重启后可读，建议支持从 DB 读取最近一次预测或明确引导使用 <code>/api/predictions/history</code>。</li>
+        <li>健壮性/配置：重试/退避已存在；CORS 已可环境变量配置；建议继续确认异常路径是否更新任务状态、前端提示是否友好。</li>
       </ul>
     </div>
   </section>
@@ -56,11 +56,9 @@
   <section>
     <h2>2. 关键问题清单（需优先修复）</h2>
     <ol>
-      <li><span class="tag tag-red">阻断</span> 解耦密钥：无 <code>ANTHROPIC_API_KEY</code> 时不应抛错崩溃；改为延迟实例化或禁用 AI 路由但保留基础 API。</li>
-      <li><span class="tag tag-red">阻断</span> 注入 DB 并落库：<code>StockAnalyzer</code> 构造时传入 <code>StockDatabase</code>；预测任务将结果写入 <code>predictions</code> 表，再返回前 100。</li>
-      <li><span class="tag tag-amber">契约</span> 前端改为按实际字段渲染；mock 数据仅示例并明显标注，避免真实数据场景报错。</li>
-      <li><span class="tag tag-amber">稳健性</span> 为 Claude/数据源请求添加超时、重试、退避与失败降级，任务失败应可见且不中断服务。</li>
-      <li><span class="tag tag-amber">配置</span> CORS 列表可配置，默认含部署域；确保敏感配置只通过环境变量，避免硬编码/入库。</li>
+      <li><span class="tag tag-amber">契约</span> 如需展示量化匹配度/模式特征，后端需补充相关字段并前端渲染；否则前端仅展示基础概率/理由。</li>
+      <li><span class="tag tag-amber">预测读取</span> 让 <code>/api/predictions</code> 支持从 DB 读取最近一次结果，或在文档/前端明确引导使用 <code>/api/predictions/history</code>。</li>
+      <li><span class="tag tag-amber">异常提示</span> 确认任务失败时 <code>task_status</code> 更新与前端提示完整，避免静默失败。</li>
     </ol>
   </section>
 
